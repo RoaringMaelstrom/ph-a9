@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toast";
 
 import NavBar from "./components/shared/Navbar";
+import Footer from "./components/shared/Footer";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
@@ -26,11 +27,12 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontMono.variable, "font-sans", inter.variable)}
     >
-      <body>
+      <body className="flex min-h-svh flex-col">
         <ThemeProvider>
           <Toaster />
           <NavBar />
-          {children}
+          <div className="flex flex-1 flex-col">{children}</div>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>
