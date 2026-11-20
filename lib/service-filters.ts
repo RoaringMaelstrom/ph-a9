@@ -1,12 +1,13 @@
 import type {
-  PageItem,
-  PaginatedServices,
   Service,
   ServiceFilters,
   ServiceSort,
   ServicesPerPage,
 } from "@/app/components/types/service"
 import { SERVICE_CATEGORIES } from "./site"
+import { parsePageParam } from "./pagination"
+
+export { getPageItems, paginate } from "./pagination"
 
 export const SORT_OPTIONS: { value: ServiceSort; label: string }[] = [
   { value: "newest", label: "Newest first" },
@@ -23,17 +24,11 @@ export const DEFAULT_PER_PAGE: ServicesPerPage = 9
 
 const SORT_VALUES = new Set<string>(SORT_OPTIONS.map((o) => o.value))
 const MAX_SEARCH_LENGTH = 100
-const MAX_PAGE = 10_000
 
 type RawParams = Record<string, string | string[] | undefined>
 
 function first(value: string | string[] | undefined) {
   return (Array.isArray(value) ? value[0] : value) ?? ""
-}
-
-function parsePage(value: string) {
-  const n = Number(value)
-  return Number.isInteger(n) && n >= 1 ? Math.min(n, MAX_PAGE) : 1
 }
 
 function parsePerPage(value: string): ServicesPerPage {
@@ -63,7 +58,7 @@ export function parseServiceFilters(params: RawParams): ServiceFilters {
     search,
     category,
     sort,
-    page: parsePage(first(params.page)),
+    page: parsePageParam(params.page),
     perPage: parsePerPage(first(params.perPage)),
   }
 }
@@ -78,59 +73,6 @@ export function filtersToSearchParams(filters: ServiceFilters) {
     params.set("perPage", String(filters.perPage))
   if (filters.page > 1) params.set("page", String(filters.page))
   return params
-}
-
-/** Slices one page out of the list. Out-of-range pages snap to the nearest valid page. */
-export function paginate(
-  services: Service[],
-  page: number,
-  perPage: number
-): PaginatedServices {
-  const total = services.length
-  const totalPages = Math.max(1, Math.ceil(total / perPage))
-  const current = Math.min(Math.max(1, page), totalPages)
-  const start = (current - 1) * perPage
-  const items = services.slice(start, start + perPage)
-  return {
-    items,
-    page: current,
-    totalPages,
-    total,
-    from: items.length ? start + 1 : 0,
-    to: start + items.length,
-  }
-}
-
-/**
- * Page buttons to show, e.g. for page 6 of 12: 1 … 5 6 7 … 12.
- * Always shows the first, last, and current ± 1 pages.
- */
-export function getPageItems(current: number, totalPages: number): PageItem[] {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1)
-  }
-
-  const pages = new Set([1, totalPages, current - 1, current, current + 1])
-  // Near the edges, show a few extra pages instead of a lone "…".
-  if (current <= 3) [2, 3, 4].forEach((p) => pages.add(p))
-  if (current >= totalPages - 2)
-    [totalPages - 3, totalPages - 2, totalPages - 1].forEach((p) =>
-      pages.add(p)
-    )
-
-  const sorted = [...pages]
-    .filter((p) => p >= 1 && p <= totalPages)
-    .sort((a, b) => a - b)
-
-  const items: PageItem[] = []
-  sorted.forEach((p, i) => {
-    const gap = i > 0 ? p - sorted[i - 1] : 1
-    // A gap of exactly one page shows that page instead of "…".
-    if (gap === 2) items.push(p - 1)
-    else if (gap > 2) items.push("ellipsis")
-    items.push(p)
-  })
-  return items
 }
 
 export function hasActiveFilters(filters: ServiceFilters) {

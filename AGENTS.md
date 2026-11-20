@@ -38,7 +38,7 @@ Categories: Haircut & Styling, Hair Coloring, Hair Treatment, Facial & Skincare,
 
 ## API contract (Express ↔ client)
 
-Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash). Fetch helpers live in `lib/api.ts`; types/interfaces live in `app/components/types/` (e.g. `service.ts`). Put new shared types there, not in `lib/`. List endpoints may return a bare array or `{ data: [...] }`.
+Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash), **including `/api`**, e.g. `http://localhost:5000/api`. All Express routes are mounted under `/api`, so the paths below are relative to it. Fetch helpers live in `lib/api.ts`; types/interfaces live in `app/components/types/` (e.g. `service.ts`). Put new shared types there, not in `lib/`. List endpoints may return a bare array or `{ data: [...] }`.
 
 `GET /services` query params (all optional): `status=active`, `search` (case-insensitive match on `serviceName`), `category` (exact), `sort` = `newest` (default) | `price-asc` | `price-desc` | `duration-asc` | `duration-desc`, `limit`. The client re-applies filter/sort defensively (`lib/service-filters.ts`).
 
@@ -124,7 +124,7 @@ Users must not reach another role's dashboard by editing the URL. Dashboard = se
 `.env*` is gitignored; never commit secrets or print them. Client-side code may only read `NEXT_PUBLIC_*` vars.
 
 Client (current + expected): `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `BETTER_AUTH_DB_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXT_PUBLIC_API_URL` (Express base URL), `NEXT_PUBLIC_APP_URL`, `IMGBB_API_KEY`.
-Server (other repo): `MONGODB_URI`, `CLIENT_URL`, `BETTER_AUTH_URL` (for JWKS), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `PORT`.
+Server (`Server/`, its own git repo, ignored by the client repo, tsconfig and ESLint): `PORT`, `NODE_ENV`, `MONGODB_URI`, `DB_NAME` (`SalonBook`), `CLIENT_URL` (comma-separated CORS origins), `BETTER_AUTH_URL` (for JWKS), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CURRENCY`. Env var names are documented in `Server/README.md` (there is no `.env.example`).
 
 README (both repos) must have: name + description, features, tech stack, install steps, run locally, env var names, live link, both repo links.
 

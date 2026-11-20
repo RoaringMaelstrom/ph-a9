@@ -26,14 +26,21 @@ const SEARCH_DEBOUNCE_MS = 350
 /**
  * Search, category filter and sort controls. All state lives in the URL
  * (`?search=&category=&sort=`), so results are shareable and survive reloads.
- * The server page re-fetches whenever the URL changes.
+ * The server page re-fetches whenever the URL changes. Also used on the admin
+ * Manage Services page, which passes its `status` tab in `preserveParams`.
  */
 export default function ServicesToolbar({
   filters,
+  preserveParams,
 }: {
   filters: ServiceFilters
+  /** Extra query params to keep when the toolbar changes the URL. */
+  preserveParams?: Record<string, string>
 }) {
-  const { navigate: navigateTo, isPending } = useServicesNavigation(filters)
+  const { navigate: navigateTo, isPending } = useServicesNavigation(
+    filters,
+    preserveParams
+  )
 
   // Local input value so typing stays responsive; synced to the URL (debounced).
   const [search, setSearch] = useState(filters.search)

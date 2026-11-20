@@ -3,6 +3,7 @@ import { UsersIcon } from "lucide-react"
 import { requireRole } from "@/lib/session"
 import { serverApi } from "@/lib/server-api"
 import { formatDate } from "@/lib/format"
+import { paginate, parsePageParam } from "@/lib/pagination"
 import type { UserAccount } from "@/app/components/types/user"
 import {
   Table,
@@ -12,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import DashboardPagination from "@/app/components/dashboard/DashboardPagination"
 import DataError from "@/app/components/dashboard/DataError"
 import DetailsList from "@/app/components/dashboard/DetailsList"
 import PageHeader from "@/app/components/dashboard/PageHeader"
@@ -22,13 +24,16 @@ import SectionMessage from "@/app/components/shared/SectionMessage"
 
 import UserActions from "./UserActions"
 
+const PER_PAGE = 12
+const SECTION_ID = "users-list"
+
 export default async function ManageUsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; page?: string | string[] }>
 }) {
   const admin = await requireRole("admin", "/dashboard/admin/users")
-  const { status: raw } = await searchParams
+  const { status: raw, page: rawPage } = await searchParams
   const status = raw === "active" || raw === "blocked" ? raw : ""
 
   const result = await serverApi<UserAccount[]>("/admin/users")
@@ -47,6 +52,7 @@ export default async function ManageUsersPage({
           // Spec: manage registered *customers*. Admin accounts aren't listed.
           users={result.data.filter((u) => u.role !== "admin")}
           status={status}
+          page={parsePageParam(rawPage)}
           currentAdminId={admin.id}
         />
       )}
@@ -57,19 +63,22 @@ export default async function ManageUsersPage({
 function UsersTable({
   users,
   status,
+  page,
   currentAdminId,
 }: {
   users: UserAccount[]
   status: "" | "active" | "blocked"
+  page: number
   currentAdminId: string
 }) {
   const blocked = users.filter((u) => u.isBlocked).length
   const visible = users
     .filter((u) => !status || (status === "blocked") === u.isBlocked)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const pageData = paginate(visible, page, PER_PAGE)
 
   return (
-    <>
+    <section id={SECTION_ID} aria-label="Customers" className="scroll-mt-24">
       <StatusTabs
         basePath="/dashboard/admin/users"
         current={status}
@@ -99,7 +108,7 @@ function UsersTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {visible.map((u) => (
+              {pageData.items.map((u) => (
                 <TableRow key={u._id}>
                   <TableCell className="pl-4">
                     <div className="flex min-w-48 items-center gap-3">
@@ -180,6 +189,12 @@ function UsersTable({
           </Table>
         </div>
       )}
-    </>
+      <DashboardPagination
+        {...pageData}
+        sectionId={SECTION_ID}
+        noun="customers"
+        className="mt-4"
+      />
+    </section>
   )
 }

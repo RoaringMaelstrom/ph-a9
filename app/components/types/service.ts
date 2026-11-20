@@ -1,3 +1,5 @@
+import type { Paginated } from "./pagination"
+
 /** Service-related types shared by the client. Shapes match the Express API (see AGENTS.md → API contract). */
 
 export type ServiceStatus = "active" | "inactive"
@@ -58,17 +60,7 @@ export interface ServiceFilters {
   perPage: ServicesPerPage
 }
 
-/** One page of results plus the numbers needed to render pagination. */
-export interface PaginatedServices {
-  items: Service[]
-  /** Current page, clamped to the valid range */
-  page: number
-  totalPages: number
-  total: number
-  /** 1-based index of the first/last item on this page (0 when empty) */
-  from: number
-  to: number
-}
+/** One page of services (see `paginate` in lib/pagination.ts). */
+export type PaginatedServices = Paginated<Service>
 
-/** A page number button, or a gap ("…") in the pagination bar. */
-export type PageItem = number | "ellipsis"
+export type { PageItem } from "./pagination"

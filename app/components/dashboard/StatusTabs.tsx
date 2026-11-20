@@ -2,16 +2,29 @@ import Link from "next/link"
 
 import { cn } from "@/lib/utils"
 
-/** URL-driven filter tabs (`?status=`), so the server renders the filtered list. */
+/**
+ * URL-driven filter tabs (`?status=`), so the server renders the filtered list.
+ * `query` holds other params to keep when switching tabs (e.g. search/sort).
+ */
 export default function StatusTabs({
   basePath,
   current,
   items,
+  query,
 }: {
   basePath: string
   current: string
   items: { value: string; label: string; count?: number }[]
+  query?: URLSearchParams
 }) {
+  function hrefFor(status: string) {
+    const params = new URLSearchParams(query)
+    params.delete("status")
+    if (status) params.set("status", status)
+    const qs = params.toString()
+    return qs ? `${basePath}?${qs}` : basePath
+  }
+
   return (
     <nav
       aria-label="Filter by status"
@@ -19,7 +32,7 @@ export default function StatusTabs({
     >
       {items.map((item) => {
         const active = item.value === current
-        const href = item.value ? `${basePath}?status=${item.value}` : basePath
+        const href = hrefFor(item.value)
         return (
           <Link
             key={item.value || "all"}

@@ -8,6 +8,7 @@ import {
   formatMoney,
   shortRef,
 } from "@/lib/format"
+import { paginate, parsePageParam } from "@/lib/pagination"
 import type { TransactionDetails } from "@/app/components/types/transaction"
 import {
   Table,
@@ -17,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import DashboardPagination from "@/app/components/dashboard/DashboardPagination"
 import DataError from "@/app/components/dashboard/DataError"
 import PageHeader from "@/app/components/dashboard/PageHeader"
 import { TransactionStatusBadge } from "@/app/components/dashboard/StatusBadge"
@@ -27,9 +29,28 @@ import SectionMessage from "@/app/components/shared/SectionMessage"
  * Read-only by design: transactions are created only by the verified Stripe
  * webhook, and admins can't edit payment records.
  */
-export default async function TransactionsPage() {
+const PER_PAGE = 12
+const SECTION_ID = "transactions-list"
+
+export default async function TransactionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string | string[] }>
+}) {
   await requireRole("admin", "/dashboard/admin/transactions")
+  const page = parsePageParam((await searchParams).page)
   const result = await serverApi<TransactionDetails[]>("/admin/transactions")
+  // Newest first, then one page of them.
+  const pageData =
+    result.error === null
+      ? paginate(
+          result.data
+            .slice()
+            .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+          page,
+          PER_PAGE
+        )
+      : null
 
   return (
     <>
@@ -46,36 +67,40 @@ export default async function TransactionsPage() {
 
       {result.error !== null ? (
         <DataError message={result.error} />
-      ) : result.data.length === 0 ? (
+      ) : pageData === null || pageData.total === 0 ? (
         <SectionMessage
           icon={<ReceiptIcon className="size-6" />}
           title="No transactions yet"
           description="Payments will appear here once customers pay for confirmed appointments."
         />
       ) : (
-        <div className="rounded-2xl border bg-card shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-4">Customer</TableHead>
-                <TableHead>Service</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Appointment
-                </TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead className="hidden sm:table-cell">Currency</TableHead>
-                <TableHead className="hidden lg:table-cell">
-                  Stripe session
-                </TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="pr-4">Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {result.data
-                .slice()
-                .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-                .map((t) => (
+        <section
+          id={SECTION_ID}
+          aria-label="Transactions"
+          className="scroll-mt-24"
+        >
+          <div className="rounded-2xl border bg-card shadow-sm">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-4">Customer</TableHead>
+                  <TableHead>Service</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Appointment
+                  </TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead className="hidden sm:table-cell">
+                    Currency
+                  </TableHead>
+                  <TableHead className="hidden lg:table-cell">
+                    Stripe session
+                  </TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="pr-4">Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageData.items.map((t) => (
                   <TableRow key={t._id}>
                     <TableCell className="pl-4">
                       <div className="flex min-w-44 items-center gap-3">
@@ -120,9 +145,16 @@ export default async function TransactionsPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableBody>
+            </Table>
+          </div>
+          <DashboardPagination
+            {...pageData}
+            sectionId={SECTION_ID}
+            noun="transactions"
+            className="mt-4"
+          />
+        </section>
       )}
     </>
   )

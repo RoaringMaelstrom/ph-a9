@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/session"
 import { serverApi } from "@/lib/server-api"
 import { timeSlotLabel } from "@/lib/booking"
 import { formatAppointmentDate, formatDate, formatPrice } from "@/lib/format"
+import { paginate, parsePageParam } from "@/lib/pagination"
 import type {
   AppointmentDetails,
   AppointmentStatus,
@@ -16,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import DashboardPagination from "@/app/components/dashboard/DashboardPagination"
 import DataError from "@/app/components/dashboard/DataError"
 import DetailsList from "@/app/components/dashboard/DetailsList"
 import PageHeader from "@/app/components/dashboard/PageHeader"
@@ -30,14 +32,16 @@ import SectionMessage from "@/app/components/shared/SectionMessage"
 import AdminAppointmentActions from "./AdminAppointmentActions"
 
 const STATUSES: AppointmentStatus[] = ["pending", "confirmed", "cancelled"]
+const PER_PAGE = 12
+const SECTION_ID = "appointments-list"
 
 export default async function ManageAppointmentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; page?: string | string[] }>
 }) {
   await requireRole("admin", "/dashboard/admin/appointments")
-  const { status: raw } = await searchParams
+  const { status: raw, page: rawPage } = await searchParams
   const status = STATUSES.includes(raw as AppointmentStatus)
     ? (raw as AppointmentStatus)
     : ""
@@ -53,7 +57,11 @@ export default async function ManageAppointmentsPage({
       {result.error !== null ? (
         <DataError message={result.error} />
       ) : (
-        <AppointmentsTable appointments={result.data} status={status} />
+        <AppointmentsTable
+          appointments={result.data}
+          status={status}
+          page={parsePageParam(rawPage)}
+        />
       )}
     </>
   )
@@ -62,9 +70,11 @@ export default async function ManageAppointmentsPage({
 function AppointmentsTable({
   appointments,
   status,
+  page,
 }: {
   appointments: AppointmentDetails[]
   status: AppointmentStatus | ""
+  page: number
 }) {
   const count = (s: AppointmentStatus) =>
     appointments.filter((a) => a.status === s).length
@@ -78,9 +88,10 @@ function AppointmentsTable({
         Number(b.status === "pending") - Number(a.status === "pending") ||
         b.createdAt.localeCompare(a.createdAt)
     )
+  const pageData = paginate(visible, page, PER_PAGE)
 
   return (
-    <>
+    <section id={SECTION_ID} aria-label="Appointments" className="scroll-mt-24">
       <StatusTabs
         basePath="/dashboard/admin/appointments"
         current={status}
@@ -118,7 +129,7 @@ function AppointmentsTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {visible.map((a) => {
+              {pageData.items.map((a) => {
                 const customer = a.customer?.name ?? "Deleted account"
                 const service = a.service?.serviceName ?? "Deleted service"
                 const when = `${formatAppointmentDate(a.appointmentDate)} at ${timeSlotLabel(a.timeSlot)}`
@@ -237,6 +248,12 @@ function AppointmentsTable({
           </Table>
         </div>
       )}
-    </>
+      <DashboardPagination
+        {...pageData}
+        sectionId={SECTION_ID}
+        noun="appointments"
+        className="mt-4"
+      />
+    </section>
   )
 }

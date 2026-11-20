@@ -3,30 +3,23 @@
 import { useTransition } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
+import { scrollToSection } from "@/lib/pagination"
 import { filtersToSearchParams } from "@/lib/service-filters"
 import type { ServiceFilters } from "@/app/components/types/service"
 
 /** id of the results <section>, used to scroll it into view on page change. */
 export const RESULTS_SECTION_ID = "service-results"
 
-/** Scrolls the results section (not the whole page) to the top of the viewport. */
-export function scrollToResults() {
-  const el = document.getElementById(RESULTS_SECTION_ID)
-  if (!el) return
-  const reduceMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches
-  el.scrollIntoView({
-    behavior: reduceMotion ? "auto" : "smooth",
-    block: "start",
-  })
-}
-
 /**
  * Updates the Browse Services URL (search, category, sort, page, perPage).
  * The server page re-renders with the new filters; `isPending` is true meanwhile.
+ * `preserveParams` are extra query params kept on every navigation (e.g. the
+ * admin page's `status` tab); empty values are left out.
  */
-export function useServicesNavigation(filters: ServiceFilters) {
+export function useServicesNavigation(
+  filters: ServiceFilters,
+  preserveParams: Record<string, string> = {}
+) {
   const router = useRouter()
   const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
@@ -38,10 +31,14 @@ export function useServicesNavigation(filters: ServiceFilters) {
       scroll = false,
     }: { mode?: "push" | "replace"; scroll?: boolean } = {}
   ) {
-    const query = filtersToSearchParams({ ...filters, ...next }).toString()
+    const params = filtersToSearchParams({ ...filters, ...next })
+    for (const [key, value] of Object.entries(preserveParams)) {
+      if (value) params.set(key, value)
+    }
+    const query = params.toString()
     const url = query ? `${pathname}?${query}` : pathname
 
-    if (scroll) scrollToResults()
+    if (scroll) scrollToSection(RESULTS_SECTION_ID)
     startTransition(() => {
       // Next's own scroll-to-top is disabled; we control scrolling ourselves.
       if (mode === "push") router.push(url, { scroll: false })
