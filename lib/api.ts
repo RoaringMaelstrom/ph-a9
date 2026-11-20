@@ -3,12 +3,17 @@ import type { Service } from "./types"
 /** Base URL of the Express server, e.g. http://localhost:5000 (no trailing slash). */
 export const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "")
 
-export type ApiResult<T> = { data: T; error: null } | { data: null; error: string }
+export type ApiResult<T> =
+  { data: T; error: null } | { data: null; error: string }
 
 /** Accepts either a bare array or `{ data: [...] }` from the API. */
 function unwrapList<T>(json: unknown): T[] | null {
   if (Array.isArray(json)) return json as T[]
-  if (json && typeof json === "object" && Array.isArray((json as { data?: unknown }).data)) {
+  if (
+    json &&
+    typeof json === "object" &&
+    Array.isArray((json as { data?: unknown }).data)
+  ) {
     return (json as { data: T[] }).data
   }
   return null
@@ -22,7 +27,9 @@ export type CategoryCount = { category: string; count: number }
  */
 export async function getCategoryCounts(): Promise<ApiResult<CategoryCount[]>> {
   if (!API_URL) {
-    console.error("NEXT_PUBLIC_API_URL is not set; cannot load category counts.")
+    console.error(
+      "NEXT_PUBLIC_API_URL is not set; cannot load category counts."
+    )
     return { data: null, error: "Category data is temporarily unavailable." }
   }
 
@@ -37,7 +44,8 @@ export async function getCategoryCounts(): Promise<ApiResult<CategoryCount[]>> {
     }
 
     const list = unwrapList<CategoryCount>(await res.json())
-    if (!list) return { data: null, error: "We couldn't load categories right now." }
+    if (!list)
+      return { data: null, error: "We couldn't load categories right now." }
 
     return {
       data: list.filter(
@@ -52,18 +60,27 @@ export async function getCategoryCounts(): Promise<ApiResult<CategoryCount[]>> {
 }
 
 /**
- * Active services for the home page "Featured Salon Services" section.
+ * Active services from the public list endpoint.
  * Server-side only. Cached for 60s and tagged `services` so admin
  * changes can revalidate it.
  */
-export async function getFeaturedServices(limit = 6): Promise<ApiResult<Service[]>> {
+export async function getActiveServices({
+  limit,
+  sort,
+}: {
+  limit: number
+  sort?: "newest"
+}): Promise<ApiResult<Service[]>> {
   if (!API_URL) {
     console.error("NEXT_PUBLIC_API_URL is not set; cannot load services.")
     return { data: null, error: "Services are temporarily unavailable." }
   }
 
+  const params = new URLSearchParams({ status: "active", limit: String(limit) })
+  if (sort) params.set("sort", sort)
+
   try {
-    const res = await fetch(`${API_URL}/services?status=active&limit=${limit}`, {
+    const res = await fetch(`${API_URL}/services?${params}`, {
       next: { revalidate: 60, tags: ["services"] },
       signal: AbortSignal.timeout(8000),
     })
@@ -73,12 +90,32 @@ export async function getFeaturedServices(limit = 6): Promise<ApiResult<Service[
     }
 
     const list = unwrapList<Service>(await res.json())
-    if (!list) return { data: null, error: "We couldn't load services right now." }
+    if (!list)
+      return { data: null, error: "We couldn't load services right now." }
 
     // The API should only return active services; filter again just in case.
-    return { data: list.filter((s) => s.status === "active").slice(0, limit), error: null }
+    let services = list.filter((s) => s.status === "active")
+    if (sort === "newest") {
+      services = [...services].sort(
+        (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
+      )
+    }
+    return { data: services.slice(0, limit), error: null }
   } catch (err) {
     console.error("GET /services failed:", err)
-    return { data: null, error: "We couldn't reach the salon server. Please try again shortly." }
+    return {
+      data: null,
+      error: "We couldn't reach the salon server. Please try again shortly.",
+    }
   }
+}
+
+/** Home page "Featured Salon Services" (Dynamic Section 1). */
+export function getFeaturedServices(limit = 6) {
+  return getActiveServices({ limit })
+}
+
+/** Home page "New Arrivals" (Dynamic Section 3): newest active services first. */
+export function getNewestServices(limit = 15) {
+  return getActiveServices({ limit, sort: "newest" })
 }

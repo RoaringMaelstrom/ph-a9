@@ -11,11 +11,13 @@ import {
 import { SERVICE_CATEGORIES } from "@/lib/site"
 import { Button } from "@/components/ui/button"
 
-const BANNER_IMAGE =
-  "https://images.unsplash.com/photo-1562322140-8baeececf3df"
+const BANNER_IMAGE = "https://images.unsplash.com/photo-1562322140-8baeececf3df"
 
 const HIGHLIGHTS = [
-  { icon: SparklesIcon, label: `${SERVICE_CATEGORIES.length} service categories` },
+  {
+    icon: SparklesIcon,
+    label: `${SERVICE_CATEGORIES.length} service categories`,
+  },
   { icon: CalendarCheckIcon, label: "Book online in minutes" },
   { icon: ShieldCheckIcon, label: "Secure payments with Stripe" },
   { icon: ClockIcon, label: "Open 7 days a week" },
@@ -93,7 +95,10 @@ export default function Banner() {
 
           <ul className="mt-10 grid grid-cols-1 gap-3 border-t pt-7 text-sm text-muted-foreground min-[420px]:grid-cols-2 sm:mt-12 sm:gap-x-6 sm:gap-y-4 sm:pt-8 lg:grid-cols-4 lg:gap-x-4">
             {HIGHLIGHTS.map(({ icon: Icon, label }) => (
-              <li key={label} className="flex items-center gap-2.5 lg:items-start">
+              <li
+                key={label}
+                className="flex items-center gap-2.5 lg:items-start"
+              >
                 <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <Icon className="size-3.5" />
                 </span>

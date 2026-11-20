@@ -4,6 +4,7 @@ import { ArrowRightIcon, CloudOffIcon, SparklesIcon } from "lucide-react"
 
 import { getFeaturedServices } from "@/lib/api"
 import { Button } from "@/components/ui/button"
+import SectionMessage from "@/app/components/shared/SectionMessage"
 import ServiceCard from "@/app/components/shared/ServiceCard"
 import ServiceGridSkeleton from "@/app/components/skeletons/ServiceCardSkeleton"
 
@@ -16,7 +17,10 @@ const FEATURED_COUNT = 6
  */
 export default function DynamicSection1() {
   return (
-    <section aria-labelledby="featured-title" className="py-16 sm:py-20 lg:py-24">
+    <section
+      aria-labelledby="featured-title"
+      className="py-16 sm:py-20 lg:py-24"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
@@ -90,25 +94,5 @@ async function FeaturedServicesGrid() {
         </li>
       ))}
     </ul>
-  )
-}
-
-function SectionMessage({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode
-  title: string
-  description: string
-}) {
-  return (
-    <div className="flex flex-col items-center rounded-2xl border border-dashed bg-muted/40 px-6 py-14 text-center">
-      <span className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-        {icon}
-      </span>
-      <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-      <p className="mt-1.5 max-w-md text-sm text-muted-foreground">{description}</p>
-    </div>
   )
 }

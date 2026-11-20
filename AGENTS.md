@@ -41,6 +41,7 @@ Categories: Haircut & Styling, Hair Coloring, Hair Treatment, Facial & Skincare,
 Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash). Fetch helpers live in `lib/api.ts`; response types in `lib/types.ts`. List endpoints may return a bare array or `{ data: [...] }`.
 
 - `GET /services?status=active&limit=6` (public): active services for the home page Featured section (`getFeaturedServices`, cached 60s, tag `services`).
+- `GET /services?status=active&limit=15&sort=newest` (public): newest active services first (by `createdAt` desc), for the home page New Arrivals section (`getNewestServices`). The client also sorts defensively.
 - `GET /services/categories` (public): `[{ category, count }]`, the number of **active** services per category, for the home page Categories section (`getCategoryCounts`, cached 60s, tag `services`). Categories with 0 active services may be omitted.
 
 ## Business rules (enforce on server; mirror in UI)
