@@ -22,6 +22,9 @@ export const SALON_INFO = {
   },
 } as const
 
+/** Display + Stripe currency (ISO 4217). */
+export const CURRENCY = "USD"
+
 export const SERVICE_CATEGORIES = [
   "Haircut & Styling",
   "Hair Coloring",

@@ -4,105 +4,62 @@
 @import "shadcn/tailwind.css";
 /* =========================================
    1. PLUGIN CONFIGURATION
+
+   Single source of truth for colors:
+   the CSS variables in :root (light) and .dark (dark), sections 4 and 5.
+
+   next-themes toggles the `.dark` class on <html>. daisyUI has ONE theme
+   whose tokens point at those variables, so daisyUI components and
+   Tailwind/shadcn utilities always switch together. Do NOT add a second
+   daisyUI theme or use `--prefersdark`: that would follow the OS setting
+   instead of the theme toggle and the two systems would disagree again.
 ========================================= */
 
 @plugin "daisyui" {
-  themes: salonbook-light --default, salonbook-dark --prefersdark;
+  themes: salonbook --default;
 }
 
 @custom-variant dark (&:is(.dark *));
 
 
 /* =========================================
-   2. DAISYUI LIGHT THEME
+   2. DAISYUI THEME (mapped to the variables)
+   Colors are never written here, only var() references.
 ========================================= */
 
 @plugin "daisyui/theme" {
-  name: "salonbook-light";
+  name: "salonbook";
   default: true;
   prefersdark: false;
-  color-scheme: light;
 
-  --color-base-100: #FAF7F2;
-  --color-base-200: #F3EDE5;
-  --color-base-300: #E9DED4;
-  --color-base-content: #342725;
+  --color-base-100: var(--background);
+  --color-base-200: var(--base-200);
+  --color-base-300: var(--base-300);
+  --color-base-content: var(--foreground);
 
-  --color-primary: #B96859;
-  --color-primary-content: #FFFFFF;
+  --color-primary: var(--primary);
+  --color-primary-content: var(--primary-foreground);
 
-  --color-secondary: #F5EAE5;
-  --color-secondary-content: #785C56;
+  --color-secondary: var(--secondary);
+  --color-secondary-content: var(--secondary-foreground);
 
-  --color-accent: #D5B47A;
-  --color-accent-content: #342725;
+  --color-accent: var(--accent);
+  --color-accent-content: var(--accent-foreground);
 
-  --color-neutral: #342725;
-  --color-neutral-content: #FAF7F2;
+  --color-neutral: var(--neutral);
+  --color-neutral-content: var(--neutral-foreground);
 
-  --color-info: #6485A3;
-  --color-info-content: #FFFFFF;
+  --color-info: var(--info);
+  --color-info-content: var(--info-foreground);
 
-  --color-success: #54866A;
-  --color-success-content: #FFFFFF;
+  --color-success: var(--success);
+  --color-success-content: var(--success-foreground);
 
-  --color-warning: #D69A38;
-  --color-warning-content: #342725;
+  --color-warning: var(--warning);
+  --color-warning-content: var(--warning-foreground);
 
-  --color-error: #C45D5D;
-  --color-error-content: #FFFFFF;
-
-  --radius-selector: 0.5rem;
-  --radius-field: 0.625rem;
-  --radius-box: 0.875rem;
-
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-
-  --border: 1px;
-  --depth: 1;
-  --noise: 0;
-}
-
-
-/* =========================================
-   3. DAISYUI DARK THEME
-========================================= */
-
-@plugin "daisyui/theme" {
-  name: "salonbook-dark";
-  default: false;
-  prefersdark: true;
-  color-scheme: dark;
-
-  --color-base-100: #211C1B;
-  --color-base-200: #2B2422;
-  --color-base-300: #3A302D;
-  --color-base-content: #F5EDE7;
-
-  --color-primary: #D58B7B;
-  --color-primary-content: #251B19;
-
-  --color-secondary: #493633;
-  --color-secondary-content: #F5EAE5;
-
-  --color-accent: #D5B47A;
-  --color-accent-content: #261F18;
-
-  --color-neutral: #3A302D;
-  --color-neutral-content: #F5EDE7;
-
-  --color-info: #83A8C8;
-  --color-info-content: #172431;
-
-  --color-success: #83B394;
-  --color-success-content: #18271D;
-
-  --color-warning: #E3B665;
-  --color-warning-content: #302311;
-
-  --color-error: #E28A86;
-  --color-error-content: #321A19;
+  --color-error: var(--destructive);
+  --color-error-content: var(--destructive-foreground);
 
   --radius-selector: 0.5rem;
   --radius-field: 0.625rem;
@@ -167,6 +124,23 @@
   --sidebar-border: #E7DCD2;
   --sidebar-ring: #B96859;
 
+  /* Brand + status colors (also used by the daisyUI theme) */
+  --gold: #D5B47A;
+  --gold-foreground: #342725;
+
+  --success: #54866A;
+  --success-foreground: #FFFFFF;
+  --warning: #D69A38;
+  --warning-foreground: #342725;
+  --info: #6485A3;
+  --info-foreground: #FFFFFF;
+
+  /* Extra surfaces for daisyUI base-200 / base-300 and neutral */
+  --base-200: #F3EDE5;
+  --base-300: #E9DED4;
+  --neutral: #342725;
+  --neutral-foreground: #FAF7F2;
+
   --radius: 0.75rem;
 }
 
@@ -220,6 +194,21 @@
   --sidebar-accent-foreground: #F5EAE5;
   --sidebar-border: #493B36;
   --sidebar-ring: #D58B7B;
+
+  --gold: #D5B47A;
+  --gold-foreground: #261F18;
+
+  --success: #83B394;
+  --success-foreground: #18271D;
+  --warning: #E3B665;
+  --warning-foreground: #302311;
+  --info: #83A8C8;
+  --info-foreground: #172431;
+
+  --base-200: #2B2422;
+  --base-300: #3A302D;
+  --neutral: #3A302D;
+  --neutral-foreground: #F5EDE7;
 }
 
 
@@ -273,6 +262,19 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --color-neutral: var(--neutral);
+  --color-neutral-foreground: var(--neutral-foreground);
+
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -313,13 +315,8 @@
   }
 
   ::selection {
-    background: #B96859;
-    color: #FFFFFF;
-  }
-
-  .dark ::selection {
-    background: #D58B7B;
-    color: #251B19;
+    background: var(--primary);
+    color: var(--primary-foreground);
   }
 }
 
@@ -336,16 +333,17 @@
   .salon-gradient {
     background: linear-gradient(
       135deg,
-      #B96859 0%,
-      #D58B7B 100%
+      var(--primary) 0%,
+      color-mix(in oklch, var(--primary), white 22%) 100%
     );
   }
 
+  /* Deep brand surface (dark in both themes), e.g. for banners */
   .salon-gradient-dark {
     background: linear-gradient(
       135deg,
-      #493633 0%,
-      #302724 100%
+      var(--neutral) 0%,
+      color-mix(in oklch, var(--neutral), black 25%) 100%
     );
   }
 

@@ -36,6 +36,13 @@ Scripts: `npm run dev | build | start | lint | typecheck | format`.
 
 Categories: Haircut & Styling, Hair Coloring, Hair Treatment, Facial & Skincare, Makeup, Manicure & Pedicure, Spa & Massage.
 
+## API contract (Express ↔ client)
+
+Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash). Fetch helpers live in `lib/api.ts`; response types in `lib/types.ts`. List endpoints may return a bare array or `{ data: [...] }`.
+
+- `GET /services?status=active&limit=6` (public): active services for the home page Featured section (`getFeaturedServices`, cached 60s, tag `services`).
+- `GET /services/categories` (public): `[{ category, count }]`, the number of **active** services per category, for the home page Categories section (`getCategoryCounts`, cached 60s, tag `services`). Categories with 0 active services may be omitted.
+
 ## Business rules (enforce on server; mirror in UI)
 
 - Only authenticated, non-blocked **customers** can book; admins cannot book.
@@ -104,6 +111,7 @@ The repo was bootstrapped from a previous template ("HireLoop"). Fix these as wo
 
 - Read the relevant doc in `node_modules/next/dist/docs/` before using a Next API (e.g. `proxy.ts`, async `params`/`searchParams`, caching).
 - Prefer Server Components; add `"use client"` only where interactivity/hooks are needed.
+- **Colors:** the only place colors are defined is `:root` (light) and `.dark` (dark) in `app/globals.css`. next-themes toggles `.dark` on `<html>`. daisyUI has a single theme (`salonbook`) whose tokens are `var(...)` references to those variables. Never hardcode hex values in components or add a daisyUI theme with `--prefersdark`/`data-theme` (it would follow the OS instead of the toggle). Use tokens: `primary`, `secondary`, `accent`, `muted`, `destructive`, `success`, `warning`, `info`, `gold`, `chart-1..5`. To add a color, define it in both `:root` and `.dark`, then map it in `@theme inline`.
 - Reuse `components/ui/*` (shadcn) before writing new primitives. Shared app components go in `app/components/` (or `components/`), skeletons in `app/components/skeletons/`.
 - Keep commits small and meaningful (they're graded); don't commit unless asked.
 - Run `npm run typecheck` and `npm run lint` before declaring work done.
