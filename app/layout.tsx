@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 
 import { Toaster } from "@/components/ui/toast";
 
+import NavBar from "./components/shared/Navbar";
+
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 const fontMono = Geist_Mono({
@@ -27,6 +29,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <Toaster />
+          <NavBar />
           {children}
         </ThemeProvider>
       </body>

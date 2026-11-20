@@ -1,130 +1,359 @@
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@plugin "daisyui";
+/* =========================================
+   1. PLUGIN CONFIGURATION
+========================================= */
+
+@plugin "daisyui" {
+  themes: salonbook-light --default, salonbook-dark --prefersdark;
+}
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+
+/* =========================================
+   2. DAISYUI LIGHT THEME
+========================================= */
+
+@plugin "daisyui/theme" {
+  name: "salonbook-light";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: #FAF7F2;
+  --color-base-200: #F3EDE5;
+  --color-base-300: #E9DED4;
+  --color-base-content: #342725;
+
+  --color-primary: #B96859;
+  --color-primary-content: #FFFFFF;
+
+  --color-secondary: #F5EAE5;
+  --color-secondary-content: #785C56;
+
+  --color-accent: #D5B47A;
+  --color-accent-content: #342725;
+
+  --color-neutral: #342725;
+  --color-neutral-content: #FAF7F2;
+
+  --color-info: #6485A3;
+  --color-info-content: #FFFFFF;
+
+  --color-success: #54866A;
+  --color-success-content: #FFFFFF;
+
+  --color-warning: #D69A38;
+  --color-warning-content: #342725;
+
+  --color-error: #C45D5D;
+  --color-error-content: #FFFFFF;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.625rem;
+  --radius-box: 0.875rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
 }
+
+
+/* =========================================
+   3. DAISYUI DARK THEME
+========================================= */
+
+@plugin "daisyui/theme" {
+  name: "salonbook-dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: #211C1B;
+  --color-base-200: #2B2422;
+  --color-base-300: #3A302D;
+  --color-base-content: #F5EDE7;
+
+  --color-primary: #D58B7B;
+  --color-primary-content: #251B19;
+
+  --color-secondary: #493633;
+  --color-secondary-content: #F5EAE5;
+
+  --color-accent: #D5B47A;
+  --color-accent-content: #261F18;
+
+  --color-neutral: #3A302D;
+  --color-neutral-content: #F5EDE7;
+
+  --color-info: #83A8C8;
+  --color-info-content: #172431;
+
+  --color-success: #83B394;
+  --color-success-content: #18271D;
+
+  --color-warning: #E3B665;
+  --color-warning-content: #302311;
+
+  --color-error: #E28A86;
+  --color-error-content: #321A19;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.625rem;
+  --radius-box: 0.875rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+
+/* =========================================
+   4. SHADCN/UI LIGHT MODE VARIABLES
+========================================= */
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+  color-scheme: light;
+
+  --background: #FAF7F2;
+  --foreground: #342725;
+
+  --card: #FFFFFF;
+  --card-foreground: #342725;
+
+  --popover: #FFFFFF;
+  --popover-foreground: #342725;
+
+  --primary: #B96859;
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #F5EAE5;
+  --secondary-foreground: #785C56;
+
+  --muted: #F0E9E1;
+  --muted-foreground: #85736D;
+
+  --accent: #E9DED4;
+  --accent-foreground: #493633;
+
+  --destructive: #C45D5D;
+  --destructive-foreground: #FFFFFF;
+
+  --border: #E7DCD2;
+  --input: #E7DCD2;
+  --ring: #B96859;
+
+  --chart-1: #B96859;
+  --chart-2: #87977D;
+  --chart-3: #D5B47A;
+  --chart-4: #785C56;
+  --chart-5: #D99A91;
+
+  --sidebar: #F3EDE5;
+  --sidebar-foreground: #342725;
+  --sidebar-primary: #B96859;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F5EAE5;
+  --sidebar-accent-foreground: #785C56;
+  --sidebar-border: #E7DCD2;
+  --sidebar-ring: #B96859;
+
+  --radius: 0.75rem;
 }
 
+
+/* =========================================
+   5. SHADCN/UI DARK MODE VARIABLES
+========================================= */
+
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+  color-scheme: dark;
+
+  --background: #211C1B;
+  --foreground: #F5EDE7;
+
+  --card: #2B2422;
+  --card-foreground: #F5EDE7;
+
+  --popover: #302724;
+  --popover-foreground: #F5EDE7;
+
+  --primary: #D58B7B;
+  --primary-foreground: #251B19;
+
+  --secondary: #493633;
+  --secondary-foreground: #F5EAE5;
+
+  --muted: #352C29;
+  --muted-foreground: #B8A69E;
+
+  --accent: #493633;
+  --accent-foreground: #F5EAE5;
+
+  --destructive: #E28A86;
+  --destructive-foreground: #321A19;
+
+  --border: #493B36;
+  --input: #493B36;
+  --ring: #D58B7B;
+
+  --chart-1: #D58B7B;
+  --chart-2: #A4B798;
+  --chart-3: #E3C38A;
+  --chart-4: #B69A91;
+  --chart-5: #C58B9A;
+
+  --sidebar: #292220;
+  --sidebar-foreground: #F5EDE7;
+  --sidebar-primary: #D58B7B;
+  --sidebar-primary-foreground: #251B19;
+  --sidebar-accent: #493633;
+  --sidebar-accent-foreground: #F5EAE5;
+  --sidebar-border: #493B36;
+  --sidebar-ring: #D58B7B;
 }
+
+
+/* =========================================
+   6. TAILWIND THEME MAPPING
+   Makes shadcn variables available as
+   Tailwind utility classes.
+========================================= */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+}
+
+
+/* =========================================
+   7. BASE STYLES
+========================================= */
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
-    }
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
-    }
-  html {
-    @apply font-sans;
-    }
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: #B96859;
+    color: #FFFFFF;
+  }
+
+  .dark ::selection {
+    background: #D58B7B;
+    color: #251B19;
+  }
+}
+
+
+/* =========================================
+   8. REUSABLE DESIGN UTILITIES
+========================================= */
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .salon-gradient {
+    background: linear-gradient(
+      135deg,
+      #B96859 0%,
+      #D58B7B 100%
+    );
+  }
+
+  .salon-gradient-dark {
+    background: linear-gradient(
+      135deg,
+      #493633 0%,
+      #302724 100%
+    );
+  }
+
+  .salon-section {
+    @apply bg-background text-foreground;
+  }
+
+  .salon-card {
+    @apply rounded-xl border border-border bg-card text-card-foreground shadow-sm;
+  }
 }
