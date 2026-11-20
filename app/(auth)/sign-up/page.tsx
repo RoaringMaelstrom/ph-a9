@@ -1,8 +1,7 @@
 import type { Metadata } from "next"
-import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
-import { auth } from "@/lib/auth"
+import { getCurrentSession } from "@/lib/session"
 import { dashboardPathFor, safeRedirect } from "@/lib/routes"
 import AuthShell from "@/app/components/shared/AuthShell"
 
@@ -22,7 +21,7 @@ export default async function SignUpPage({
   const redirectTo = safeRedirect(params.redirect)
 
   // Signed-in users don't need to register again.
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await getCurrentSession()
   if (session) {
     redirect(redirectTo ?? dashboardPathFor(session.user.role))
   }

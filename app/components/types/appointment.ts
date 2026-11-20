@@ -29,6 +29,34 @@ export interface CreateAppointmentInput {
   message?: string
 }
 
+/** Service fields the API embeds in appointment/transaction lists. `null` if the service was deleted. */
+export interface ServiceSummary {
+  _id: string
+  serviceName: string
+  category: string
+  image: string
+  price: number
+}
+
+/** Customer fields the API embeds in admin lists. `null` if the account was deleted. */
+export interface CustomerSummary {
+  _id: string
+  name: string
+  email: string
+  image?: string | null
+  phone?: string | null
+}
+
+/** Appointment with its service populated (customer "My Appointments"). */
+export interface AppointmentWithService extends Appointment {
+  service: ServiceSummary | null
+}
+
+/** Appointment with service and customer populated (admin "Manage Appointments"). */
+export interface AppointmentDetails extends AppointmentWithService {
+  customer: CustomerSummary | null
+}
+
 /** A bookable time slot shown in the appointment form. */
 export interface TimeSlot {
   /** 24h "HH:mm", stored on the appointment */

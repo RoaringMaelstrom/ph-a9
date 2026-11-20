@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
-import { headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import {
   BanIcon,
@@ -14,7 +13,7 @@ import {
   TagIcon,
 } from "lucide-react"
 
-import { auth } from "@/lib/auth"
+import { BLOCKED_PATH, getCurrentSession } from "@/lib/session"
 import { getServiceById } from "@/lib/api"
 import { formatDuration, formatPrice } from "@/lib/format"
 import { categoryHref } from "@/lib/site"
@@ -48,22 +47,13 @@ export default async function ServiceDetailsPage({ params }: Props) {
   const { id } = await params
 
   // proxy.ts already redirects visitors without a session cookie; this is the
-  // real check against the database.
-  const session = await auth.api.getSession({ headers: await headers() })
+  // real check, read from the database (not the cookie cache) so the role and
+  // blocked status are current, e.g. admins always get the "can't book" notice.
+  const session = await getCurrentSession()
   if (!session)
     redirect(`/sign-in?redirect=${encodeURIComponent(`/services/${id}`)}`)
 
-  if (session.user.isBlocked) {
-    return (
-      <PageShell>
-        <SectionMessage
-          icon={<BanIcon className="size-6" />}
-          title="Your account is blocked"
-          description="You can't view services or book appointments right now. Please contact the salon for help."
-        />
-      </PageShell>
-    )
-  }
+  if (session.user.isBlocked) redirect(BLOCKED_PATH)
 
   const result = await getServiceById(id)
   if (result.status === "not-found") notFound()

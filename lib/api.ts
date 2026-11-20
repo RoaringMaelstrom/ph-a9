@@ -161,6 +161,8 @@ export async function getServiceById(id: string): Promise<ServiceLookup> {
   try {
     const res = await fetch(`${API_URL}/services/${id}`, {
       next: { revalidate: 60, tags: ["services", `service:${id}`] },
+      // Never let a slow API leave the details page loading forever.
+      signal: AbortSignal.timeout(8000),
     })
     if (res.status === 404 || res.status === 400) return { status: "not-found" }
     if (!res.ok) {

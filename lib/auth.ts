@@ -6,7 +6,7 @@ import { mongodbAdapter } from "@better-auth/mongo-adapter"
 import { jwt } from "better-auth/plugins"
 
 const client = new MongoClient(process.env.BETTER_AUTH_DB_URL as string)
-const db = client.db("HireLoop")
+const db = client.db("SalonBook")
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -30,6 +30,12 @@ export const auth = betterAuth({
         type: "boolean",
         defaultValue: false,
         input: false,
+      },
+      // Editable by the user on their profile page.
+      phone: {
+        type: "string",
+        required: false,
+        input: true,
       },
     },
   },
@@ -82,10 +88,14 @@ export const auth = betterAuth({
   },
 
   session: {
+    // Short-lived cache of the session (incl. role/isBlocked) in a signed
+    // cookie, to save DB reads. Keep it short so role changes and blocks
+    // reach client-side checks (navbar) quickly. Server-side authorization
+    // bypasses it entirely (lib/session.ts). This is not the session lifetime.
     cookieCache: {
       enabled: true,
       strategy: "jwt",
-      maxAge: 60 * 60 * 24 * 15,
+      maxAge: 60 * 5,
     },
   },
 

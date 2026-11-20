@@ -51,9 +51,28 @@ Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash). Fetch helpers live in `lib/
 
 **Authenticated requests** (`lib/api-client.ts`, browser only) send `Authorization: Bearer <JWT>` from `authClient.token()` (Better Auth `jwt` plugin). Express verifies it against the JWKS at `${BETTER_AUTH_URL}/api/auth/jwks`, then loads the user to check `role` and `isBlocked`. Express CORS must allow the client origin and the `Authorization` header.
 
-**Route protection:** `proxy.ts` redirects requests with no session cookie on `/services/:id`, `/dashboard/*` and `/payment/*` to `/sign-in?redirect=…`, and steers users to their own role's dashboard. It's optimistic (cookies only); pages must still call `auth.api.getSession` and check role/`isBlocked`.
+**Route protection:** `proxy.ts` only checks that a session cookie exists on `/services/:id`, `/dashboard/*` and `/payment/*` (otherwise → `/sign-in?redirect=…`). It must **not** make role decisions: the cookie cache can hold a stale role, which caused an infinite redirect loop between dashboards. All server-side session reads use `getCurrentSession`/`requireRole` from `lib/session.ts` (DB, cookie cache bypassed), never `auth.api.getSession` directly. The cookie cache is 5 minutes (`lib/auth.ts`) and only affects client-side `useSession` (navbar).
 
 - `GET /services/categories` (public): `[{ category, count }]`, the number of **active** services per category, for the home page Categories section (`getCategoryCounts`, cached 60s, tag `services`). Categories with 0 active services may be omitted.
+
+**Dashboard endpoints.** All require a JWT. Express must check the role from the DB user (not from the request body) and reject blocked users with 403. Types are in `app/components/types/`.
+
+Customer (only ever the caller's own records):
+- `GET /appointments/me` → `AppointmentWithService[]` (`service` populated: `_id, serviceName, category, image, price`; `null` if deleted).
+- `PATCH /appointments/:id/cancel`: only the owner, only while `pending`; 409 otherwise.
+- `GET /transactions/me` → `TransactionDetails[]` (payment history).
+- `POST /payments/checkout-session` `{ appointmentId }` → `{ url }`: only the owner, only `confirmed` + `unpaid`. Creates a Stripe Checkout session (success → `${CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`, cancel → `/payment/cancel`). **Only the verified Stripe webhook** (`checkout.session.completed`, signature-checked) may set `paymentStatus: "paid"` and insert the `transactions` record.
+
+Admin (403 for everyone else):
+- `GET /admin/stats` → `AdminStats` (customers, active services, total/pending/confirmed appointments, successful payments).
+- `GET /admin/services` → `Service[]` including inactive. `POST /services`, `PATCH /services/:id` (partial `ServiceInput`), `DELETE /services/:id`. Validate price > 0 and duration > 0.
+- `GET /admin/appointments[?status=&limit=]` → `AppointmentDetails[]` (service + customer populated). `PATCH /admin/appointments/:id/status` `{ status: "confirmed" | "cancelled" }`: confirm only from `pending`; cancel from `pending` or `confirmed`. Never accepts `paymentStatus`.
+- `GET /admin/users` → `UserAccount[]`. `PATCH /admin/users/:id/block` `{ isBlocked }`: never on admins. When blocking, also delete the user's Better Auth `session` documents so they're signed out.
+- `GET /admin/transactions` → `TransactionDetails[]`. Read-only; there are no admin write endpoints for transactions.
+
+Profile updates don't go through Express: `ProfileForm` uses Better Auth `updateUser` (name, image, phone), and `role`/`isBlocked` are `input: false`.
+
+**Next-side guards** (`lib/session.ts`): every dashboard page calls `requireRole(role, path)`, which reads the session from the DB (`disableCookieCache`). Server Actions use `assertRole`. Layouts alone are not enough, because they don't re-run on client navigation. **Blocked users** are always *redirected* to `/account-blocked` (`BLOCKED_PATH`, a standalone page outside the dashboard layout) by `requireActiveUser`/`requireRole` and the service details page. Never show the blocked notice from inside the dashboard layout: on client navigation the old layout stays and the page area goes blank.
 
 ## Business rules (enforce on server; mirror in UI)
 
@@ -112,11 +131,10 @@ README (both repos) must have: name + description, features, tech stack, install
 ## Current state / known leftovers (as of 2026-11-20)
 
 The repo was bootstrapped from a previous template ("HireLoop"). Fix these as work proceeds:
-- `package.json` name is `HireLoop-Client`; `lib/auth.ts` uses DB name `"HireLoop"` → rename to SalonBook.
-- `app/layout.tsx` imports `./components/shared/Navbar`, which doesn't exist yet (build fails until it's created). `app/components/shared` and `app/components/skeletons` are empty.
-- `app/page.tsx` is still the shadcn placeholder; `README.md` is the template README.
-- `lib/auth-client.ts` reads `process.env.BETTER_AUTH_URL` in browser code (undefined there) — use `NEXT_PUBLIC_APP_URL` or omit for same-origin.
-- `lib/auth.ts` hardcodes `trustedOrigins: ["http://localhost:3000"]` and has no `role`/`isBlocked` additionalFields yet.
+- `package.json` name is still `HireLoop-Client`. (The auth DB is now `"SalonBook"`; the Express server must use the same database.)
+- `README.md` is still the template README.
+- Footer contact info and social links in `lib/site.ts` are placeholders.
+- `/payment/success` and `/payment/cancel` pages (Stripe redirects) are not built yet.
 
 ## Working conventions
 

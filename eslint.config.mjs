@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Express API: a separate project/repo with its own tooling.
+    "Server/**",
   ]),
 ]);
 

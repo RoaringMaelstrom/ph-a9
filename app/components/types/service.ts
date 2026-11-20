@@ -15,6 +15,19 @@ export interface Service {
   createdAt: string
 }
 
+/** Body for admin `POST /services` and `PATCH /services/:id`. */
+export interface ServiceInput {
+  serviceName: string
+  category: string
+  description: string
+  price: number
+  /** Minutes */
+  duration: number
+  /** ImgBB URL from an uploaded file */
+  image: string
+  status: ServiceStatus
+}
+
 /** Active-service count for one category (`GET /services/categories`). */
 export interface CategoryCount {
   category: string
