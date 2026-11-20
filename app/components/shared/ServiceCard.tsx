@@ -2,7 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowRightIcon, ClockIcon, ScissorsIcon } from "lucide-react"
 
-import type { Service } from "@/lib/types"
+import type { Service } from "@/app/components/types/service"
 import { formatDuration, formatPrice } from "@/lib/format"
 import { Button } from "@/components/ui/button"
 
@@ -46,7 +46,10 @@ export default function ServiceCard({
       <div className="flex flex-1 flex-col p-5">
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-lg leading-snug font-semibold">
-            <Link href={href} className="hover:text-primary focus-visible:text-primary">
+            <Link
+              href={href}
+              className="hover:text-primary focus-visible:text-primary"
+            >
               {service.serviceName}
             </Link>
           </h3>

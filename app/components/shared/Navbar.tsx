@@ -120,7 +120,9 @@ export default function Navbar() {
                   "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
                   isActive(pathname, link.href) && "text-foreground"
                 )}
-                aria-current={isActive(pathname, link.href) ? "page" : undefined}
+                aria-current={
+                  isActive(pathname, link.href) ? "page" : undefined
+                }
               >
                 {link.label}
               </Link>
@@ -176,7 +178,11 @@ export default function Navbar() {
             </DropdownMenu>
           ) : (
             <div className="hidden items-center gap-2 md:flex">
-              <Button variant="ghost" render={<Link href="/sign-in" />} nativeButton={false}>
+              <Button
+                variant="ghost"
+                render={<Link href="/sign-in" />}
+                nativeButton={false}
+              >
                 Sign In
               </Button>
               <Button render={<Link href="/sign-up" />} nativeButton={false}>

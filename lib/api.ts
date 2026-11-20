@@ -1,4 +1,10 @@
-import type { Service } from "./types"
+import type {
+  CategoryCount,
+  Service,
+  ServiceFilters,
+  ServiceSort,
+} from "@/app/components/types/service"
+import { applyServiceFilters } from "./service-filters"
 
 /** Base URL of the Express server, e.g. http://localhost:5000 (no trailing slash). */
 export const API_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, "")
@@ -18,8 +24,6 @@ function unwrapList<T>(json: unknown): T[] | null {
   }
   return null
 }
-
-export type CategoryCount = { category: string; count: number }
 
 /**
  * Number of active services per category, for the home page categories section.
@@ -59,25 +63,32 @@ export async function getCategoryCounts(): Promise<ApiResult<CategoryCount[]>> {
   }
 }
 
+type ActiveServicesQuery = Partial<ServiceFilters> & {
+  limit?: number
+  sort?: ServiceSort
+}
+
 /**
- * Active services from the public list endpoint.
- * Server-side only. Cached for 60s and tagged `services` so admin
- * changes can revalidate it.
+ * Active services from the public list endpoint, with optional search,
+ * category filter, sort and limit. Server-side only. Cached for 60s and
+ * tagged `services` so admin changes can revalidate it.
  */
 export async function getActiveServices({
   limit,
   sort,
-}: {
-  limit: number
-  sort?: "newest"
-}): Promise<ApiResult<Service[]>> {
+  search,
+  category,
+}: ActiveServicesQuery = {}): Promise<ApiResult<Service[]>> {
   if (!API_URL) {
     console.error("NEXT_PUBLIC_API_URL is not set; cannot load services.")
     return { data: null, error: "Services are temporarily unavailable." }
   }
 
-  const params = new URLSearchParams({ status: "active", limit: String(limit) })
+  const params = new URLSearchParams({ status: "active" })
+  if (search) params.set("search", search)
+  if (category) params.set("category", category)
   if (sort) params.set("sort", sort)
+  if (limit) params.set("limit", String(limit))
 
   try {
     const res = await fetch(`${API_URL}/services?${params}`, {
@@ -93,14 +104,12 @@ export async function getActiveServices({
     if (!list)
       return { data: null, error: "We couldn't load services right now." }
 
-    // The API should only return active services; filter again just in case.
-    let services = list.filter((s) => s.status === "active")
-    if (sort === "newest") {
-      services = [...services].sort(
-        (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
-      )
-    }
-    return { data: services.slice(0, limit), error: null }
+    // The API should already do all of this; re-apply so results stay correct.
+    const services = applyServiceFilters(
+      list.filter((s) => s.status === "active"),
+      { search, category, sort }
+    )
+    return { data: limit ? services.slice(0, limit) : services, error: null }
   } catch (err) {
     console.error("GET /services failed:", err)
     return {
@@ -118,4 +127,9 @@ export function getFeaturedServices(limit = 6) {
 /** Home page "New Arrivals" (Dynamic Section 3): newest active services first. */
 export function getNewestServices(limit = 15) {
   return getActiveServices({ limit, sort: "newest" })
+}
+
+/** Browse Services page: all active services matching the URL filters. */
+export function getBrowseServices(filters: ServiceFilters) {
+  return getActiveServices(filters)
 }

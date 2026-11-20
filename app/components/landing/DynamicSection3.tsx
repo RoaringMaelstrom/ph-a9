@@ -13,7 +13,9 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import SectionMessage from "@/app/components/shared/SectionMessage"
 
-import NewArrivalsPager, { type NewArrival } from "./NewArrivalsPager"
+import type { NewArrival } from "@/app/components/types/service"
+
+import NewArrivalsPager from "./NewArrivalsPager"
 
 const NEWEST_COUNT = 15
 

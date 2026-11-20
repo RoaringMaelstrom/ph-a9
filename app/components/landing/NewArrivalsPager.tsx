@@ -11,7 +11,7 @@ import {
   ScissorsIcon,
 } from "lucide-react"
 
-import type { Service } from "@/lib/types"
+import type { NewArrival } from "@/app/components/types/service"
 import { formatDuration, formatPrice } from "@/lib/format"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,11 +19,6 @@ import {
   PaginationContent,
   PaginationItem,
 } from "@/components/ui/pagination"
-
-export type NewArrival = Service & {
-  /** Pre-formatted on the server so server and client render the same text. */
-  addedLabel: string
-}
 
 const PAGE_SIZE = 5
 

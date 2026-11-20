@@ -1,7 +1,15 @@
-import { CalendarCheckIcon, ScissorsIcon, SparklesIcon, StarIcon } from "lucide-react"
+import {
+  CalendarCheckIcon,
+  ScissorsIcon,
+  SparklesIcon,
+  StarIcon,
+} from "lucide-react"
 
 const HIGHLIGHTS = [
-  { icon: SparklesIcon, text: "Hair, skin, nails and spa services in one place" },
+  {
+    icon: SparklesIcon,
+    text: "Hair, skin, nails and spa services in one place",
+  },
   { icon: CalendarCheckIcon, text: "Request appointments in a few clicks" },
   { icon: StarIcon, text: "Track bookings and payments from your dashboard" },
 ]
@@ -36,7 +44,10 @@ export default function AuthShell({ children }: { children: React.ReactNode }) {
             </h2>
             <ul className="space-y-4">
               {HIGHLIGHTS.map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-start gap-3 text-primary-foreground/90">
+                <li
+                  key={text}
+                  className="flex items-start gap-3 text-primary-foreground/90"
+                >
                   <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-white/15">
                     <Icon className="size-3.5" />
                   </span>

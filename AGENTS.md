@@ -38,7 +38,11 @@ Categories: Haircut & Styling, Hair Coloring, Hair Treatment, Facial & Skincare,
 
 ## API contract (Express ↔ client)
 
-Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash). Fetch helpers live in `lib/api.ts`; response types in `lib/types.ts`. List endpoints may return a bare array or `{ data: [...] }`.
+Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash). Fetch helpers live in `lib/api.ts`; types/interfaces live in `app/components/types/` (e.g. `service.ts`). Put new shared types there, not in `lib/`. List endpoints may return a bare array or `{ data: [...] }`.
+
+`GET /services` query params (all optional): `status=active`, `search` (case-insensitive match on `serviceName`), `category` (exact), `sort` = `newest` (default) | `price-asc` | `price-desc` | `duration-asc` | `duration-desc`, `limit`. The client re-applies filter/sort defensively (`lib/service-filters.ts`).
+
+- `GET /services?status=active&search=&category=&sort=` (public): Browse Services page (`getBrowseServices`). Filters come from the page URL. Pagination (`?page=`, `?perPage=` 9 | 15 | 30, default 9) is currently applied in Next after fetching (`paginate` in `lib/service-filters.ts`), so the API doesn't need to support it yet.
 
 - `GET /services?status=active&limit=6` (public): active services for the home page Featured section (`getFeaturedServices`, cached 60s, tag `services`).
 - `GET /services?status=active&limit=15&sort=newest` (public): newest active services first (by `createdAt` desc), for the home page New Arrivals section (`getNewestServices`). The client also sorts defensively.

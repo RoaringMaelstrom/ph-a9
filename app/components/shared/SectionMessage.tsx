@@ -3,10 +3,13 @@ export default function SectionMessage({
   icon,
   title,
   description,
+  action,
 }: {
   icon: React.ReactNode
   title: string
   description: string
+  /** Optional button/link shown under the description. */
+  action?: React.ReactNode
 }) {
   return (
     <div className="flex flex-col items-center rounded-2xl border border-dashed bg-muted/40 px-6 py-14 text-center">
@@ -17,6 +20,7 @@ export default function SectionMessage({
       <p className="mt-1.5 max-w-md text-sm text-muted-foreground">
         {description}
       </p>
+      {action && <div className="mt-6">{action}</div>}
     </div>
   )
 }
