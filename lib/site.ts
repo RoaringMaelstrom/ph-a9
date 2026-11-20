@@ -22,6 +22,24 @@ export const SALON_INFO = {
   },
 } as const
 
+/**
+ * Predefined appointment start times (24h). Hourly, within opening hours.
+ * Sunday closes at 4 PM, so later slots are disabled then (see lib/booking.ts).
+ */
+export const TIME_SLOTS = [
+  { value: "10:00", label: "10:00 AM" },
+  { value: "11:00", label: "11:00 AM" },
+  { value: "12:00", label: "12:00 PM" },
+  { value: "13:00", label: "1:00 PM" },
+  { value: "14:00", label: "2:00 PM" },
+  { value: "15:00", label: "3:00 PM" },
+  { value: "16:00", label: "4:00 PM" },
+  { value: "17:00", label: "5:00 PM" },
+] as const
+
+/** How far ahead customers can book. */
+export const BOOKING_WINDOW_DAYS = 60
+
 /** Display + Stripe currency (ISO 4217). */
 export const CURRENCY = "USD"
 

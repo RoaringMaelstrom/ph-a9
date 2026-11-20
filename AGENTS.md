@@ -46,6 +46,13 @@ Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash). Fetch helpers live in `lib/
 
 - `GET /services?status=active&limit=6` (public): active services for the home page Featured section (`getFeaturedServices`, cached 60s, tag `services`).
 - `GET /services?status=active&limit=15&sort=newest` (public): newest active services first (by `createdAt` desc), for the home page New Arrivals section (`getNewestServices`). The client also sorts defensively.
+- `GET /services/:id` (public): one service (active or inactive) for the details page (`getServiceById`). 404 for unknown ids; malformed ids never reach the API.
+- `POST /appointments` (**customer only**): body `{ serviceId, appointmentDate: "YYYY-MM-DD", timeSlot: "HH:mm", message? }` (types in `app/components/types/appointment.ts`). The server takes `customerId` from the JWT and `servicePrice` from the service, and sets `status: "pending"`, `paymentStatus: "unpaid"`. Responses: 201 `{ data: appointment }`, 400 (validation / inactive service), 401 (no or invalid token), 403 (admin or blocked user), 409 (an active appointment already exists for that date + slot). Errors use `{ message }`, which is shown to the user.
+
+**Authenticated requests** (`lib/api-client.ts`, browser only) send `Authorization: Bearer <JWT>` from `authClient.token()` (Better Auth `jwt` plugin). Express verifies it against the JWKS at `${BETTER_AUTH_URL}/api/auth/jwks`, then loads the user to check `role` and `isBlocked`. Express CORS must allow the client origin and the `Authorization` header.
+
+**Route protection:** `proxy.ts` redirects requests with no session cookie on `/services/:id`, `/dashboard/*` and `/payment/*` to `/sign-in?redirect=…`, and steers users to their own role's dashboard. It's optimistic (cookies only); pages must still call `auth.api.getSession` and check role/`isBlocked`.
+
 - `GET /services/categories` (public): `[{ category, count }]`, the number of **active** services per category, for the home page Categories section (`getCategoryCounts`, cached 60s, tag `services`). Categories with 0 active services may be omitted.
 
 ## Business rules (enforce on server; mirror in UI)
@@ -110,7 +117,6 @@ The repo was bootstrapped from a previous template ("HireLoop"). Fix these as wo
 - `app/page.tsx` is still the shadcn placeholder; `README.md` is the template README.
 - `lib/auth-client.ts` reads `process.env.BETTER_AUTH_URL` in browser code (undefined there) — use `NEXT_PUBLIC_APP_URL` or omit for same-origin.
 - `lib/auth.ts` hardcodes `trustedOrigins: ["http://localhost:3000"]` and has no `role`/`isBlocked` additionalFields yet.
-- No `proxy.ts` route protection yet.
 
 ## Working conventions
 

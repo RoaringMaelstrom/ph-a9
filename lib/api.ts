@@ -133,3 +133,50 @@ export function getNewestServices(limit = 15) {
 export function getBrowseServices(filters: ServiceFilters) {
   return getActiveServices(filters)
 }
+
+/** MongoDB ObjectId: 24 hex characters. */
+export function isValidObjectId(id: string) {
+  return /^[a-f\d]{24}$/i.test(id)
+}
+
+export type ServiceLookup =
+  | { status: "ok"; data: Service }
+  | { status: "not-found" }
+  | { status: "error"; error: string }
+
+/**
+ * One service by id for the details page (active or inactive; the page
+ * decides whether it can be booked). Malformed ids are "not-found" without
+ * calling the API. Cached for 60s, tag `services`; memoized per render, so
+ * generateMetadata and the page share one request.
+ */
+export async function getServiceById(id: string): Promise<ServiceLookup> {
+  if (!isValidObjectId(id)) return { status: "not-found" }
+
+  if (!API_URL) {
+    console.error("NEXT_PUBLIC_API_URL is not set; cannot load service.")
+    return { status: "error", error: "Services are temporarily unavailable." }
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/services/${id}`, {
+      next: { revalidate: 60, tags: ["services", `service:${id}`] },
+    })
+    if (res.status === 404 || res.status === 400) return { status: "not-found" }
+    if (!res.ok) {
+      console.error(`GET /services/${id} failed with ${res.status}`)
+      return { status: "error", error: "We couldn't load this service." }
+    }
+
+    const json = await res.json()
+    const service: Service | undefined = json?.data ?? json
+    if (!service?._id) return { status: "not-found" }
+    return { status: "ok", data: service }
+  } catch (err) {
+    console.error(`GET /services/${id} failed:`, err)
+    return {
+      status: "error",
+      error: "We couldn't reach the salon server. Please try again shortly.",
+    }
+  }
+}
