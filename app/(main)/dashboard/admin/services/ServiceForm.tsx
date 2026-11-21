@@ -113,7 +113,7 @@ export default function ServiceForm({ service }: { service?: Service }) {
     if (image.file) {
       setPhase("uploading")
       try {
-        imageUrl = await uploadImage(image.file)
+        imageUrl = await uploadImage(image.file, "service")
       } catch (err) {
         setPhase("idle")
         const message =

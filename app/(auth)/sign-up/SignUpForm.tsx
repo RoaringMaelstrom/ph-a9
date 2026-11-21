@@ -17,7 +17,7 @@ import {
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { signIn, signUp } from "@/lib/auth-client"
+import { signIn, signUp, updateUser } from "@/lib/auth-client"
 import { PASSWORD_RULES, passwordError } from "@/lib/password"
 import { dashboardPathFor } from "@/lib/routes"
 import {
@@ -172,21 +172,11 @@ export default function SignUpForm({ redirectTo }: { redirectTo: string | null }
       return
     }
 
-    let image: string | undefined
-    if (imageMode === "upload" && imageFile) {
-      setStatus("uploading")
-      try {
-        image = await uploadImage(imageFile)
-      } catch (err) {
-        setStatus("idle")
-        const message = err instanceof Error ? err.message : "Image upload failed."
-        setErrors((e) => ({ ...e, image: message }))
-        toast.add({ title: "Image upload failed", description: message, type: "error" })
-        return
-      }
-    } else if (imageMode === "url" && imageUrl.trim()) {
-      image = imageUrl.trim()
-    }
+    // An image URL is saved with the account. An uploaded file is sent only
+    // after the account exists: the upload route requires a signed-in user,
+    // so the ImgBB key can't be used by anonymous visitors.
+    const image =
+      imageMode === "url" && imageUrl.trim() ? imageUrl.trim() : undefined
 
     setStatus("creating")
     const { data, error } = await signUp.email({
@@ -208,6 +198,24 @@ export default function SignUpForm({ redirectTo }: { redirectTo: string | null }
         type: "error",
       })
       return
+    }
+
+    // Signed in now (Better Auth signs in after sign-up): upload the photo.
+    if (imageMode === "upload" && imageFile) {
+      setStatus("uploading")
+      try {
+        const uploaded = await uploadImage(imageFile, "profile")
+        const { error: imageError } = await updateUser({ image: uploaded })
+        if (imageError) throw new Error(imageError.message)
+      } catch {
+        // The account exists, so don't block: they can add it later.
+        toast.add({
+          title: "Profile photo not saved",
+          description:
+            "Your account was created, but the photo couldn't be uploaded. You can add it from My Profile.",
+          type: "warning",
+        })
+      }
     }
 
     toast.add({

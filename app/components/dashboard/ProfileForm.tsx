@@ -92,7 +92,7 @@ export default function ProfileForm({ user }: { user: ProfileUser }) {
     if (image.mode === "upload" && image.file) {
       setStatus("uploading")
       try {
-        newImage = await uploadImage(image.file)
+        newImage = await uploadImage(image.file, "profile")
       } catch (err) {
         setStatus("idle")
         const message =
