@@ -2,18 +2,18 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { CreditCardIcon, EyeIcon, XIcon } from "lucide-react"
+import { EyeIcon, XIcon } from "lucide-react"
 
-import { ApiError, cancelMyAppointment, startCheckout } from "@/lib/api-client"
+import { ApiError, cancelMyAppointment } from "@/lib/api-client"
 import type {
   AppointmentStatus,
   PaymentStatus,
 } from "@/app/components/types/appointment"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
 import { toast } from "@/components/ui/toast"
 import ConfirmDialog from "@/app/components/dashboard/ConfirmDialog"
 import DetailsDialog from "@/app/components/dashboard/DetailsDialog"
+import PayNowButton from "@/app/components/shared/PayNowButton"
 
 /**
  * Row actions for "My Appointments". Buttons only appear when the action is
@@ -39,7 +39,6 @@ export default function AppointmentActions({
   const router = useRouter()
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
-  const [paying, setPaying] = useState(false)
 
   const canCancel = status === "pending"
   const canPay = status === "confirmed" && paymentStatus === "unpaid"
@@ -60,23 +59,6 @@ export default function AppointmentActions({
     }
   }
 
-  async function handlePay() {
-    setPaying(true)
-    try {
-      const { url } = await startCheckout(id)
-      if (!url) throw new Error("Stripe didn't return a checkout page.")
-      // Full navigation to Stripe Checkout; keep the spinner until we leave.
-      window.location.assign(url)
-    } catch (err) {
-      setPaying(false)
-      toast.add({
-        title: "Couldn't start payment",
-        description: err instanceof Error ? err.message : "Please try again.",
-        type: "error",
-      })
-    }
-  }
-
   return (
     <div className="flex items-center justify-end gap-1.5">
       <Button
@@ -88,12 +70,7 @@ export default function AppointmentActions({
         <EyeIcon />
       </Button>
 
-      {canPay && (
-        <Button size="sm" onClick={handlePay} disabled={paying}>
-          {paying ? <Spinner /> : <CreditCardIcon />}
-          {paying ? "Redirecting..." : "Pay Now"}
-        </Button>
-      )}
+      {canPay && <PayNowButton appointmentId={id} />}
 
       {canCancel && (
         <Button

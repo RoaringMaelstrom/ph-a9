@@ -42,12 +42,12 @@ Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash), **including `/api`**, e.g. 
 
 `GET /services` query params (all optional): `status=active`, `search` (case-insensitive match on `serviceName`), `category` (exact), `sort` = `newest` (default) | `price-asc` | `price-desc` | `duration-asc` | `duration-desc`, `limit`. The client re-applies filter/sort defensively (`lib/service-filters.ts`).
 
-- `GET /services?status=active&search=&category=&sort=` (public): Browse Services page (`getBrowseServices`). Filters come from the page URL. Pagination (`?page=`, `?perPage=` 9 | 15 | 30, default 9) is currently applied in Next after fetching (`paginate` in `lib/service-filters.ts`), so the API doesn't need to support it yet.
+- `GET /services?status=active&search=&category=&sort=` (public): Browse Services page (`getBrowseServices`). Filters come from the page URL. Pagination (`?page=`, `?perPage=` 9 | 15 | 30, default 9) is applied in Next after fetching (`paginate` from `lib/pagination.ts`, re-exported by `lib/service-filters.ts`), so the API doesn't support it. The server ignores `status=` and always returns active services only; an unknown `category`/`sort` or a bad `limit` is a 400 (the client sanitizes the URL first, so this can't happen). `limit` is capped at 100; no `limit` = all.
 
 - `GET /services?status=active&limit=6` (public): active services for the home page Featured section (`getFeaturedServices`, cached 60s, tag `services`).
 - `GET /services?status=active&limit=15&sort=newest` (public): newest active services first (by `createdAt` desc), for the home page New Arrivals section (`getNewestServices`). The client also sorts defensively.
 - `GET /services/:id` (public): one service (active or inactive) for the details page (`getServiceById`). 404 for unknown ids; malformed ids never reach the API.
-- `POST /appointments` (**customer only**): body `{ serviceId, appointmentDate: "YYYY-MM-DD", timeSlot: "HH:mm", message? }` (types in `app/components/types/appointment.ts`). The server takes `customerId` from the JWT and `servicePrice` from the service, and sets `status: "pending"`, `paymentStatus: "unpaid"`. Responses: 201 `{ data: appointment }`, 400 (validation / inactive service), 401 (no or invalid token), 403 (admin or blocked user), 409 (an active appointment already exists for that date + slot). Errors use `{ message }`, which is shown to the user.
+- `POST /appointments` (**customer only**): body `{ serviceId, appointmentDate: "YYYY-MM-DD", timeSlot: "HH:mm", message? }` (types in `app/components/types/appointment.ts`). The server takes `customerId` from the JWT and `servicePrice` from the service, and sets `status: "pending"`, `paymentStatus: "unpaid"`. Responses: 201 `{ data: appointment }`, 400 (validation / inactive service), 401 (no or invalid token), 403 (admin or blocked user), 409 in two cases: that **service** already has a pending/confirmed appointment at that date + slot (also enforced by a unique partial index), or the **customer** already has one at that date + slot (any service). The server also rejects past dates (1-day time-zone allowance), dates > 60 days ahead (`BOOKING_WINDOW_DAYS`) and Sunday slots after 15:00, mirroring `lib/booking.ts`. Errors use `{ message }`, which is shown to the user. **Known gap:** `BookingForm.tsx` shows a hardcoded "Someone has already booked that time" for every 409 instead of the server's message.
 
 **Authenticated requests** (`lib/api-client.ts`, browser only) send `Authorization: Bearer <JWT>` from `authClient.token()` (Better Auth `jwt` plugin). Express verifies it against the JWKS at `${BETTER_AUTH_URL}/api/auth/jwks`, then loads the user to check `role` and `isBlocked`. Express CORS must allow the client origin and the `Authorization` header.
 
@@ -59,15 +59,16 @@ Base URL: `NEXT_PUBLIC_API_URL` (no trailing slash), **including `/api`**, e.g. 
 
 Customer (only ever the caller's own records):
 - `GET /appointments/me` → `AppointmentWithService[]` (`service` populated: `_id, serviceName, category, image, price`; `null` if deleted).
-- `PATCH /appointments/:id/cancel`: only the owner, only while `pending`; 409 otherwise.
-- `GET /transactions/me` → `TransactionDetails[]` (payment history).
-- `POST /payments/checkout-session` `{ appointmentId }` → `{ url }`: only the owner, only `confirmed` + `unpaid`. Creates a Stripe Checkout session (success → `${CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`, cancel → `/payment/cancel`). **Only the verified Stripe webhook** (`checkout.session.completed`, signature-checked) may set `paymentStatus: "paid"` and insert the `transactions` record.
+- `PATCH /appointments/:id/cancel`: only the owner (someone else's id → 404), only while `pending`; 409 otherwise.
+- `GET /transactions/me` → `TransactionDetails[]` (payment history). Each item must include populated `service` (summary), `customer` and the appointment's `appointmentDate`, not just the stored transaction fields.
+- `POST /payments/checkout-session` `{ appointmentId }` → `{ url }`: only the owner, only `confirmed` + `unpaid`. Creates a Stripe Checkout session (success → `${CLIENT_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`, cancel → `/payment/cancel`). **Only the verified Stripe webhook** (`checkout.session.completed`, signature-checked) may set `paymentStatus: "paid"` and insert the `transactions` record. The amount always comes from the stored appointment; the webhook also checks metadata (`appointmentId`, `customerId`, `client_reference_id`), amount and currency, and is idempotent per session id.
+- `GET /payments/checkout-session/:sessionId` → `CheckoutSessionStatus` (`app/components/types/payment.ts`): read-only, only the session's own customer (404 otherwise). Used by `/payment/success`, which shows "paid" only when the DB says so (appointment paid + transaction saved) and polls while the webhook is pending. `/payment/cancel?appointment_id=` offers "Try again" (`PayNowButton`) if the appointment is still confirmed + unpaid. Both pages call `requireRole("customer", …)`.
 
 Admin (403 for everyone else):
 - `GET /admin/stats` → `AdminStats` (customers, active services, total/pending/confirmed appointments, successful payments).
-- `GET /admin/services` → `Service[]` including inactive. `POST /services`, `PATCH /services/:id` (partial `ServiceInput`), `DELETE /services/:id`. Validate price > 0 and duration > 0.
-- `GET /admin/appointments[?status=&limit=]` → `AppointmentDetails[]` (service + customer populated). `PATCH /admin/appointments/:id/status` `{ status: "confirmed" | "cancelled" }`: confirm only from `pending`; cancel from `pending` or `confirmed`. Never accepts `paymentStatus`.
-- `GET /admin/users` → `UserAccount[]`. `PATCH /admin/users/:id/block` `{ isBlocked }`: never on admins. When blocking, also delete the user's Better Auth `session` documents so they're signed out.
+- `GET /admin/services` → `Service[]` including inactive. `POST /services`, `PATCH /services/:id` (partial `ServiceInput`), `DELETE /services/:id` (→ `{ _id }`). Validate price > 0 and duration > 0 (whole minutes ≤ 720), name 3–80, description 20–1000. `image` must be an `https` URL on `i.ibb.co` or `images.unsplash.com` (the hosts in `next.config` `remotePatterns`). Mongoose validation errors return `{ message: "Some fields are invalid.", errors: { field: msg } }`; the client only shows `message`.
+- `GET /admin/appointments[?status=&limit=]` → `AppointmentDetails[]` (service + customer populated: `name, email, image, phone`), newest first; `limit` 1–100, none = all. `PATCH /admin/appointments/:id/status` `{ status: "confirmed" | "cancelled" }`: confirm only from `pending`; cancel from `pending` or `confirmed`. Never accepts `paymentStatus`. Invalid transitions → 409. Cancelling a paid confirmed appointment is allowed (no automatic refund).
+- `GET /admin/users` → `UserAccount[]`: **customers only** (admins are excluded), newest first, each with `appointmentCount`. `PATCH /admin/users/:id/block` `{ isBlocked: boolean }`: never on admins (403), returns the updated `UserAccount`. When blocking, also delete the user's Better Auth `session` documents so they're signed out.
 - `GET /admin/transactions` → `TransactionDetails[]`. Read-only; there are no admin write endpoints for transactions.
 
 Profile updates don't go through Express: `ProfileForm` uses Better Auth `updateUser` (name, image, phone), and `role`/`isBlocked` are `input: false`.
@@ -106,6 +107,19 @@ Card data (home + browse): image, name, category, price, duration, short descrip
 
 Users must not reach another role's dashboard by editing the URL. Dashboard = separate layout with sidebar + main content, responsive, stat cards, tables.
 
+**Pagination & filters (client-side, URL-driven).** Lists are fetched whole and paginated in Next with `paginate`/`parsePageParam`/`parsePerPageParam` from `lib/pagination.ts`. Page and filters live in the URL (`?page=`, `?perPage=`, `?status=`, …) so reloads and back/forward work; changing any filter/tab/page size resets to page 1 and keeps the other params. Changing page scrolls the list's `<section id=…>` (which has `scroll-mt-24` for the sticky navbar) into view via `scrollToSection`. Components: `app/components/shared/PaginationBar.tsx` (presentational Previous/1…n/Next, used by Browse Services and the dashboard) and `app/components/dashboard/DashboardPagination.tsx` ("Showing a–b of n" + bar + optional "Show [n] per page"; it reads/updates the current URL with `useSearchParams`). Page sizes:
+
+| Panel | Per page | Section id |
+|---|---|---|
+| Browse Services | 9 (choose 9 / 15 / 30) | `service-results` |
+| Admin overview, pending requests | 5 | `pending-requests` |
+| Admin Manage Appointments | 12 | `appointments-list` |
+| Admin Manage Users | 12 | `users-list` |
+| Admin Transactions | 12 | `transactions-list` |
+| Admin Manage Services | 10 (choose 10 / 20 / 30 / 40) | `services-list` |
+
+Admin Manage Services also reuses the Browse Services toolbar (`app/services/ServicesToolbar.tsx`: search, sort, category pills) together with its All/Active/Inactive `StatusTabs`. The toolbar takes `preserveParams` (keeps `status`/`perPage`) and `StatusTabs` takes `query` (keeps search/category/sort/perPage), so neither resets the other. Tab counts reflect the current search/category. Browse's own `perPage` is pinned to its default there, so it never leaks into the admin URL.
+
 ## UX requirements
 
 - Toasts for all success/error feedback (never `alert()`); confirmation dialogs for destructive actions.
@@ -128,13 +142,46 @@ Server (`Server/`, its own git repo, ignored by the client repo, tsconfig and ES
 
 README (both repos) must have: name + description, features, tech stack, install steps, run locally, env var names, live link, both repo links.
 
+## Express server (`Server/`) — build status (as of 2026-11-21)
+
+`Server/` is a **staging copy**: the user copies each step into their real repo (`C:\Users\TradeOne\Desktop\SalonBook-Server`) and commits it there, to show ≥12 meaningful server commits. Build it **one step at a time, only when the user says "do step N"**, and finish each step with the file list plus a suggested commit message. Never commit. The user put server work **on hold** after step 10.
+
+Stack: Express 5 + TypeScript 5.9 (NodeNext, `.js` import suffixes), mongoose 9 (use `returnDocument: "after"`, not `new: true`), jose JWKS verification, tsx for dev. Vercel zero-config: the entry is `src/index.ts` and it default-exports the app, and no file may be named `app.ts`/`server.ts` (Vercel would pick it). Local dev uses `src/dev.ts` (`npm run dev`, port 5000). `connectDB` runs per request (cached). The JSON parser skips `/api/payments/webhook` (raw body for Stripe). Responses are `{ success, data }` / `{ success: false, message, errors? }`. Auth: `verifyJWT` (EdDSA, iss = aud = `BETTER_AUTH_URL`), then `requireRole` loads the user from the DB. Use `...customerOnly` / `...adminOnly` on routes.
+
+| Step | Commit | Status |
+|---|---|---|
+| 1 | Boilerplate | done |
+| 2 | Env, DB connection, error handling | done |
+| 3 | Endpoint stubs (501) | done |
+| 4 | Models (User = Better Auth `user`, Service, Appointment, Transaction) | done |
+| 5 | Public service endpoints | done |
+| 6 | JWT middleware (`verifyJWT`) | done |
+| 7 | Role / blocked authorization (`requireRole`) | done |
+| 8 | Admin service CRUD + `seed/services.json` | done |
+| 9 | Customer appointments (create, my list, cancel) | done |
+| 10 | Admin appointments (confirm/cancel) + users (list, block/unblock + delete sessions) | done; the real block/session-deletion path is untested (see below) |
+| 11 | Stripe Checkout + verified webhook (only place that sets `paid` and creates the transaction) + session status endpoint | done (tested in-process with signed fake events); real keys still missing from `Server/.env` |
+| 12 | `/admin/stats`, `/transactions/me`, `/admin/transactions`, final README | **todo**. Until then those endpoints return 501, and the client shows a `DataError` |
+
+Planned for later: make the validation-error `message` name the first invalid field (client toasts only show `message`).
+
+**Seed data:** `Server/seed/services.json` has 38 services (MongoDB Extended JSON; 35 active, 3 inactive; Unsplash images, all checked to load). The user imports it themselves (Compass or `mongoimport`); never insert it for them.
+
+**Testing rules (user-approved, 2026-11):**
+- Test in-process or on ports 5055/5066. Port 5000 and 3000 are the user's own running server and client: only send read-only GETs there.
+- Use a fake JWKS (own Ed25519 key) and an in-memory stub for `User.findById`.
+- Writing `[TEST]` services/appointments to the real DB is OK if they're deleted in `finally` and leftovers are counted.
+- **Never write to the real `user` or `session` collections.** The permission checker blocked this, and the user doesn't want test accounts created.
+- Never print secrets or `.env` values; check env files with booleans/shapes only.
+- In the DB, `session.userId` is an ObjectId. As of 2026-11-20 the only accounts were 2 admins.
+
 ## Current state / known leftovers (as of 2026-11-20)
 
 The repo was bootstrapped from a previous template ("HireLoop"). Fix these as work proceeds:
-- `package.json` name is still `HireLoop-Client`. (The auth DB is now `"SalonBook"`; the Express server must use the same database.)
 - `README.md` is still the template README.
 - Footer contact info and social links in `lib/site.ts` are placeholders.
-- `/payment/success` and `/payment/cancel` pages (Stripe redirects) are not built yet.
+- On 2026-11-21 the saved client `.env` had no `NEXT_PUBLIC_API_URL` line (only `Server/.env` did), though the user says it's set. If API calls fail with "unavailable", check the root `.env` first: `NEXT_PUBLIC_API_URL=http://localhost:5000/api`, then restart `next dev`.
+- `npm run lint` has 3 pre-existing problems in files we didn't write (`components/ui/carousel.tsx`, `hooks/use-mobile.ts`: set-state-in-effect; `app/layout.tsx`: unused `Geist`).
 
 ## Working conventions
 

@@ -7,6 +7,7 @@ import type {
   AppointmentStatus,
   CreateAppointmentInput,
 } from "@/app/components/types/appointment"
+import type { CheckoutSessionStatus } from "@/app/components/types/payment"
 import type { Service, ServiceInput } from "@/app/components/types/service"
 import type { UserAccount } from "@/app/components/types/user"
 
@@ -97,6 +98,13 @@ export function startCheckout(appointmentId: string) {
     method: "POST",
     body: { appointmentId },
   })
+}
+
+/** Read-only status of the customer's own Checkout Session (success page). */
+export function getCheckoutSessionStatus(sessionId: string) {
+  return apiRequest<CheckoutSessionStatus>(
+    `/payments/checkout-session/${encodeURIComponent(sessionId)}`
+  )
 }
 
 // ---------------------------------------------------------------------------
