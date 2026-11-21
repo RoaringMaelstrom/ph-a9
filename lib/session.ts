@@ -61,6 +61,15 @@ export async function requireRole(
   return user
 }
 
+/**
+ * Whether the signed-in user can sign in with email + password (has a
+ * "credential" account). Google-only accounts can set one on their profile.
+ */
+export async function hasPasswordSignIn(): Promise<boolean> {
+  const accounts = await auth.api.listUserAccounts({ headers: await headers() })
+  return accounts.some((account) => account.providerId === "credential")
+}
+
 /** Same check for Server Actions: throws instead of redirecting. */
 export async function assertRole(role: UserRole): Promise<SessionUser> {
   const session = await getCurrentSession()

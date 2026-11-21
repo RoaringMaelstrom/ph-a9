@@ -71,7 +71,7 @@ Admin (403 for everyone else):
 - `GET /admin/users` → `UserAccount[]`: **customers only** (admins are excluded), newest first, each with `appointmentCount`. `PATCH /admin/users/:id/block` `{ isBlocked: boolean }`: never on admins (403), returns the updated `UserAccount`. When blocking, also delete the user's Better Auth `session` documents so they're signed out.
 - `GET /admin/transactions` → `TransactionDetails[]`. Read-only; there are no admin write endpoints for transactions.
 
-Profile updates don't go through Express: `ProfileForm` uses Better Auth `updateUser` (name, image, phone), and `role`/`isBlocked` are `input: false`.
+Profile updates don't go through Express: `ProfileForm` uses Better Auth `updateUser` (name, image, phone), and `role`/`isBlocked` are `input: false`. Passwords: `PasswordForm` (both profile pages) uses `changePassword` (current password required, optional sign-out of other devices) for email/password accounts, and the `setAccountPassword` Server Action (`app/(main)/dashboard/password-actions.ts`, wraps server-only `auth.api.setPassword`) to add a first password to Google-only accounts. `hasPasswordSignIn()` in `lib/session.ts` decides which form shows. The sign-up password rules are enforced server-side for `/change-password` too (hook in `lib/auth.ts`).
 
 **Next-side guards** (`lib/session.ts`): every dashboard page calls `requireRole(role, path)`, which reads the session from the DB (`disableCookieCache`). Server Actions use `assertRole`. Layouts alone are not enough, because they don't re-run on client navigation. **Blocked users** are always *redirected* to `/account-blocked` (`BLOCKED_PATH`, a standalone page outside the dashboard layout) by `requireActiveUser`/`requireRole` and the service details page. Never show the blocked notice from inside the dashboard layout: on client navigation the old layout stays and the page area goes blank.
 
@@ -144,7 +144,7 @@ README (both repos) must have: name + description, features, tech stack, install
 
 ## Express server (`Server/`) — build status (as of 2026-11-21)
 
-`Server/` is a **staging copy**: the user copies each step into their real repo (`C:\Users\TradeOne\Desktop\SalonBook-Server`) and commits it there, to show ≥12 meaningful server commits. Build it **one step at a time, only when the user says "do step N"**, and finish each step with the file list plus a suggested commit message. Never commit. The user put server work **on hold** after step 10.
+`Server/` is a **staging copy**: the user copies each step into their real repo (`C:\Users\TradeOne\Desktop\SalonBook-Server`) and commits it there, to show ≥12 meaningful server commits. Build it **one step at a time, only when the user says "do step N"**, and finish each step with the file list plus a suggested commit message. Never commit. All 12 planned steps are done.
 
 Stack: Express 5 + TypeScript 5.9 (NodeNext, `.js` import suffixes), mongoose 9 (use `returnDocument: "after"`, not `new: true`), jose JWKS verification, tsx for dev. Vercel zero-config: the entry is `src/index.ts` and it default-exports the app, and no file may be named `app.ts`/`server.ts` (Vercel would pick it). Local dev uses `src/dev.ts` (`npm run dev`, port 5000). `connectDB` runs per request (cached). The JSON parser skips `/api/payments/webhook` (raw body for Stripe). Responses are `{ success, data }` / `{ success: false, message, errors? }`. Auth: `verifyJWT` (EdDSA, iss = aud = `BETTER_AUTH_URL`), then `requireRole` loads the user from the DB. Use `...customerOnly` / `...adminOnly` on routes.
 
@@ -161,7 +161,7 @@ Stack: Express 5 + TypeScript 5.9 (NodeNext, `.js` import suffixes), mongoose 9 
 | 9 | Customer appointments (create, my list, cancel) | done |
 | 10 | Admin appointments (confirm/cancel) + users (list, block/unblock + delete sessions) | done; the real block/session-deletion path is untested (see below) |
 | 11 | Stripe Checkout + verified webhook (only place that sets `paid` and creates the transaction) + session status endpoint | done (tested in-process with signed fake events); real keys still missing from `Server/.env` |
-| 12 | `/admin/stats`, `/transactions/me`, `/admin/transactions`, final README | **todo**. Until then those endpoints return 501, and the client shows a `DataError` |
+| 12 | `/admin/stats`, `/transactions/me`, `/admin/transactions`, final README | done (tested in-process). README live API link is still _TBD_ |
 
 Planned for later: make the validation-error `message` name the first invalid field (client toasts only show `message`).
 

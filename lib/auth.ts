@@ -5,6 +5,13 @@ import { MongoClient } from "mongodb"
 import { mongodbAdapter } from "@better-auth/mongo-adapter"
 import { jwt } from "better-auth/plugins"
 
+/** Auth endpoints that set a password, and the body field holding it. */
+const PASSWORD_FIELDS: Record<string, string> = {
+  "/sign-up/email": "password",
+  "/change-password": "newPassword",
+  "/set-password": "newPassword",
+}
+
 const client = new MongoClient(process.env.BETTER_AUTH_DB_URL as string)
 const db = client.db("SalonBook")
 
@@ -65,10 +72,13 @@ export const auth = betterAuth({
   },
 
   hooks: {
-    // Enforce the password rules on the server, not just in the form.
+    // Enforce the password rules on the server, not just in the forms
+    // (sign-up, change password, and setting a first password for a
+    // Google-only account).
     before: createAuthMiddleware(async (ctx) => {
-      if (ctx.path !== "/sign-up/email") return
-      const message = passwordError(String(ctx.body?.password ?? ""))
+      const field = PASSWORD_FIELDS[ctx.path]
+      if (!field) return
+      const message = passwordError(String(ctx.body?.[field] ?? ""))
       if (message) throw new APIError("BAD_REQUEST", { message })
     }),
   },
