@@ -256,6 +256,36 @@ export function PaginationSkeleton({
   )
 }
 
+/**
+ * Same layout as `DetailsList`: real labels, placeholder values. `rows` maps
+ * each label to the value's width class (or "badge" for a status badge).
+ */
+export function DetailsListSkeleton({
+  rows,
+}: {
+  rows: [label: string, value: string][]
+}) {
+  return (
+    <dl className="divide-y rounded-xl border">
+      {rows.map(([label, value]) => (
+        <div
+          key={label}
+          className="grid grid-cols-[8.5rem_1fr] items-center gap-3 px-4 py-2.5 text-sm"
+        >
+          <dt className="text-muted-foreground">{label}</dt>
+          <dd className="flex min-h-5 items-center">
+            {value === "badge" ? (
+              <BadgeSkeleton width="w-14" />
+            ) : (
+              <Skeleton className={cn("h-4 max-w-full", value)} />
+            )}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
 // --- Forms --------------------------------------------------------------------
 
 /** Label + input placeholder (h-9 control, like `Input` / `InputGroup`). */
