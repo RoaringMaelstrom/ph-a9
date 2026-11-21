@@ -48,12 +48,17 @@ export default function StatCard({
   )
 }
 
-export function StatCardSkeleton() {
+/** Loading placeholder; pass the card's real `label` so only the number pulses. */
+export function StatCardSkeleton({ label }: { label?: string }) {
   return (
     <div className="rounded-2xl border bg-card p-5 shadow-sm">
-      <div className="flex items-start justify-between">
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="size-9 rounded-xl" />
+      <div className="flex items-start justify-between gap-3">
+        {label ? (
+          <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        ) : (
+          <Skeleton className="h-4 w-28" />
+        )}
+        <Skeleton className="size-9 shrink-0 rounded-xl" />
       </div>
       <Skeleton className="mt-3 h-8 w-16" />
     </div>
