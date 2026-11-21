@@ -28,28 +28,25 @@ export default function TransactionsLoading() {
         columns={[
           {
             header: "Customer",
+            kind: "primary",
             className: "pl-4",
             cell: <IdentityCellSkeleton mediaSize="size-8" />,
           },
           { header: "Service", cell: <TextSkeleton width="w-32" /> },
-          {
-            header: "Appointment",
-            className: "hidden md:table-cell",
-            cell: <TextSkeleton width="w-28" />,
-          },
+          { header: "Appointment", cell: <TextSkeleton width="w-28" /> },
           { header: "Amount", cell: <TextSkeleton width="w-14" /> },
-          {
-            header: "Currency",
-            className: "hidden sm:table-cell",
-            cell: <TextSkeleton width="w-8" />,
-          },
+          { header: "Currency", cell: <TextSkeleton width="w-8" /> },
           {
             header: "Stripe session",
-            className: "hidden lg:table-cell",
+            className: "md:max-lg:hidden",
             cell: <TextSkeleton width="w-28" />,
           },
           { header: "Status", cell: <BadgeSkeleton width="w-12" /> },
-          { header: "Date", className: "pr-4", cell: <TextSkeleton width="w-24" /> },
+          {
+            header: "Date",
+            className: "pr-4",
+            cell: <TextSkeleton width="w-24" />,
+          },
         ]}
       />
       <PaginationSkeleton />

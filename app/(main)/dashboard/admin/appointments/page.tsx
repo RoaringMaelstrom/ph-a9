@@ -9,15 +9,15 @@ import type {
   AppointmentDetails,
   AppointmentStatus,
 } from "@/app/components/types/appointment"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import DashboardPagination from "@/app/components/dashboard/DashboardPagination"
+import {
+  DataCell,
+  DataHead,
+  DataRow,
+  DataTable,
+  DataTableBody,
+  DataTableHeader,
+} from "@/app/components/dashboard/DataTable"
 import DataError from "@/app/components/dashboard/DataError"
 import DetailsList from "@/app/components/dashboard/DetailsList"
 import PageHeader from "@/app/components/dashboard/PageHeader"
@@ -112,141 +112,139 @@ function AppointmentsTable({
           description="New requests from customers will appear here."
         />
       ) : (
-        <div className="rounded-2xl border bg-card shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-4">Customer</TableHead>
-                <TableHead>Service</TableHead>
-                <TableHead>Date &amp; time</TableHead>
-                <TableHead className="hidden md:table-cell">Price</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead className="hidden xl:table-cell">
-                  Requested
-                </TableHead>
-                <TableHead className="pr-4 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageData.items.map((a) => {
-                const customer = a.customer?.name ?? "Deleted account"
-                const service = a.service?.serviceName ?? "Deleted service"
-                const when = `${formatAppointmentDate(a.appointmentDate)} at ${timeSlotLabel(a.timeSlot)}`
-                return (
-                  <TableRow key={a._id}>
-                    <TableCell className="pl-4">
-                      <div className="flex min-w-44 items-center gap-3">
-                        <UserAvatar
-                          name={a.customer?.name}
-                          image={a.customer?.image}
-                          className="size-9"
-                        />
-                        <div className="min-w-0">
-                          <p className="truncate font-medium">{customer}</p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {a.customer?.email ?? "—"}
-                          </p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <p className="max-w-48 truncate font-medium">{service}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {a.service?.category ?? "—"}
-                      </p>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <p>{formatAppointmentDate(a.appointmentDate)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {timeSlotLabel(a.timeSlot)}
-                      </p>
-                    </TableCell>
-                    <TableCell className="hidden font-semibold tabular-nums md:table-cell">
-                      {formatPrice(a.servicePrice)}
-                    </TableCell>
-                    <TableCell>
-                      <AppointmentStatusBadge status={a.status} />
-                    </TableCell>
-                    <TableCell>
-                      <PaymentStatusBadge status={a.paymentStatus} />
-                    </TableCell>
-                    <TableCell className="hidden whitespace-nowrap text-muted-foreground xl:table-cell">
-                      {formatDate(a.createdAt)}
-                    </TableCell>
-                    <TableCell className="pr-4">
-                      <AdminAppointmentActions
-                        id={a._id}
-                        status={a.status}
-                        summary={`${service} for ${customer} on ${when}`}
-                        details={
-                          <DetailsList
-                            rows={[
-                              { label: "Customer", value: customer },
-                              {
-                                label: "Email",
-                                value: a.customer?.email ?? "—",
-                              },
-                              {
-                                label: "Phone",
-                                value: a.customer?.phone || "—",
-                              },
-                              { label: "Service", value: service },
-                              {
-                                label: "Category",
-                                value: a.service?.category ?? "—",
-                              },
-                              {
-                                label: "Date",
-                                value: formatAppointmentDate(a.appointmentDate),
-                              },
-                              {
-                                label: "Time",
-                                value: timeSlotLabel(a.timeSlot),
-                              },
-                              {
-                                label: "Price",
-                                value: formatPrice(a.servicePrice),
-                              },
-                              {
-                                label: "Status",
-                                value: (
-                                  <AppointmentStatusBadge status={a.status} />
-                                ),
-                              },
-                              {
-                                label: "Payment",
-                                value: (
-                                  <PaymentStatusBadge
-                                    status={a.paymentStatus}
-                                  />
-                                ),
-                              },
-                              {
-                                label: "Requested on",
-                                value: formatDate(a.createdAt),
-                              },
-                              {
-                                label: "Message",
-                                value: a.message ? (
-                                  <span className="whitespace-pre-line">
-                                    {a.message}
-                                  </span>
-                                ) : (
-                                  "—"
-                                ),
-                              },
-                            ]}
-                          />
-                        }
+        <DataTable>
+          <DataTableHeader>
+            <DataHead className="pl-4">Customer</DataHead>
+            <DataHead>Service</DataHead>
+            <DataHead>Date &amp; time</DataHead>
+            <DataHead>Price</DataHead>
+            <DataHead>Status</DataHead>
+            <DataHead>Payment</DataHead>
+            <DataHead className="md:max-xl:hidden">Requested</DataHead>
+            <DataHead className="pr-4 text-right">Actions</DataHead>
+          </DataTableHeader>
+          <DataTableBody>
+            {pageData.items.map((a) => {
+              const customer = a.customer?.name ?? "Deleted account"
+              const service = a.service?.serviceName ?? "Deleted service"
+              const when = `${formatAppointmentDate(a.appointmentDate)} at ${timeSlotLabel(a.timeSlot)}`
+              return (
+                <DataRow key={a._id}>
+                  <DataCell label="Customer" kind="primary" className="pl-4">
+                    <div className="flex min-w-44 items-center gap-3">
+                      <UserAvatar
+                        name={a.customer?.name}
+                        image={a.customer?.image}
+                        className="size-9"
                       />
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{customer}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {a.customer?.email ?? "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </DataCell>
+                  <DataCell label="Service">
+                    <p className="max-w-48 truncate font-medium">{service}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {a.service?.category ?? "—"}
+                    </p>
+                  </DataCell>
+                  <DataCell label="Date & time" className="whitespace-nowrap">
+                    <p>{formatAppointmentDate(a.appointmentDate)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {timeSlotLabel(a.timeSlot)}
+                    </p>
+                  </DataCell>
+                  <DataCell
+                    label="Price"
+                    className="font-semibold tabular-nums"
+                  >
+                    {formatPrice(a.servicePrice)}
+                  </DataCell>
+                  <DataCell label="Status">
+                    <AppointmentStatusBadge status={a.status} />
+                  </DataCell>
+                  <DataCell label="Payment">
+                    <PaymentStatusBadge status={a.paymentStatus} />
+                  </DataCell>
+                  <DataCell
+                    label="Requested"
+                    className="whitespace-nowrap text-muted-foreground md:max-xl:hidden"
+                  >
+                    {formatDate(a.createdAt)}
+                  </DataCell>
+                  <DataCell label="Actions" kind="actions" className="pr-4">
+                    <AdminAppointmentActions
+                      id={a._id}
+                      status={a.status}
+                      summary={`${service} for ${customer} on ${when}`}
+                      details={
+                        <DetailsList
+                          rows={[
+                            { label: "Customer", value: customer },
+                            {
+                              label: "Email",
+                              value: a.customer?.email ?? "—",
+                            },
+                            {
+                              label: "Phone",
+                              value: a.customer?.phone || "—",
+                            },
+                            { label: "Service", value: service },
+                            {
+                              label: "Category",
+                              value: a.service?.category ?? "—",
+                            },
+                            {
+                              label: "Date",
+                              value: formatAppointmentDate(a.appointmentDate),
+                            },
+                            {
+                              label: "Time",
+                              value: timeSlotLabel(a.timeSlot),
+                            },
+                            {
+                              label: "Price",
+                              value: formatPrice(a.servicePrice),
+                            },
+                            {
+                              label: "Status",
+                              value: (
+                                <AppointmentStatusBadge status={a.status} />
+                              ),
+                            },
+                            {
+                              label: "Payment",
+                              value: (
+                                <PaymentStatusBadge status={a.paymentStatus} />
+                              ),
+                            },
+                            {
+                              label: "Requested on",
+                              value: formatDate(a.createdAt),
+                            },
+                            {
+                              label: "Message",
+                              value: a.message ? (
+                                <span className="whitespace-pre-line">
+                                  {a.message}
+                                </span>
+                              ) : (
+                                "—"
+                              ),
+                            },
+                          ]}
+                        />
+                      }
+                    />
+                  </DataCell>
+                </DataRow>
+              )
+            })}
+          </DataTableBody>
+        </DataTable>
       )}
       <DashboardPagination
         {...pageData}

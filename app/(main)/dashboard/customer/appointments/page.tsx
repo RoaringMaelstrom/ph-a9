@@ -18,13 +18,13 @@ import type {
 import type { TransactionDetails } from "@/app/components/types/transaction"
 import { Button } from "@/components/ui/button"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  DataCell,
+  DataHead,
+  DataRow,
+  DataTable,
+  DataTableBody,
+  DataTableHeader,
+} from "@/app/components/dashboard/DataTable"
 import DataError from "@/app/components/dashboard/DataError"
 import DetailsList from "@/app/components/dashboard/DetailsList"
 import PageHeader from "@/app/components/dashboard/PageHeader"
@@ -91,49 +91,51 @@ export default async function MyAppointmentsPage({
             description="Payments for your confirmed appointments will appear here."
           />
         ) : (
-          <div className="rounded-2xl border bg-card shadow-sm">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="pl-4">Service</TableHead>
-                  <TableHead>Appointment</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Reference
-                  </TableHead>
-                  <TableHead className="pr-4">Paid on</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactionsResult.data.map((t) => (
-                  <TableRow key={t._id}>
-                    <TableCell className="pl-4 font-medium">
-                      {t.service?.serviceName ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      {formatAppointmentDate(t.appointmentDate)}
-                    </TableCell>
-                    <TableCell className="font-semibold tabular-nums">
-                      {formatMoney(t.amount, t.currency)}
-                    </TableCell>
-                    <TableCell>
-                      <TransactionStatusBadge status={t.status} />
-                    </TableCell>
-                    <TableCell
-                      className="hidden font-mono text-xs text-muted-foreground md:table-cell"
-                      title={t.stripeSessionId}
-                    >
-                      {shortRef(t.stripeSessionId)}
-                    </TableCell>
-                    <TableCell className="pr-4">
-                      {formatDate(t.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable>
+            <DataTableHeader>
+              <DataHead className="pl-4">Service</DataHead>
+              <DataHead>Appointment</DataHead>
+              <DataHead>Amount</DataHead>
+              <DataHead>Status</DataHead>
+              <DataHead>Reference</DataHead>
+              <DataHead className="pr-4">Paid on</DataHead>
+            </DataTableHeader>
+            <DataTableBody>
+              {transactionsResult.data.map((t) => (
+                <DataRow key={t._id}>
+                  <DataCell
+                    label="Service"
+                    kind="primary"
+                    className="pl-4 font-medium"
+                  >
+                    {t.service?.serviceName ?? "—"}
+                  </DataCell>
+                  <DataCell label="Appointment">
+                    {formatAppointmentDate(t.appointmentDate)}
+                  </DataCell>
+                  <DataCell
+                    label="Amount"
+                    className="font-semibold tabular-nums"
+                  >
+                    {formatMoney(t.amount, t.currency)}
+                  </DataCell>
+                  <DataCell label="Status">
+                    <TransactionStatusBadge status={t.status} />
+                  </DataCell>
+                  <DataCell
+                    label="Reference"
+                    className="font-mono text-xs text-muted-foreground"
+                    title={t.stripeSessionId}
+                  >
+                    {shortRef(t.stripeSessionId)}
+                  </DataCell>
+                  <DataCell label="Paid on" className="pr-4">
+                    {formatDate(t.createdAt)}
+                  </DataCell>
+                </DataRow>
+              ))}
+            </DataTableBody>
+          </DataTable>
         )}
       </section>
     </>
@@ -186,117 +188,115 @@ function AppointmentsSection({
           }
         />
       ) : (
-        <div className="rounded-2xl border bg-card shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-4">Service</TableHead>
-                <TableHead>Date &amp; time</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead className="hidden lg:table-cell">
-                  Requested
-                </TableHead>
-                <TableHead className="pr-4 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visible.map((a) => {
-                const name =
-                  a.service?.serviceName ?? "Service no longer available"
-                const when = `${formatAppointmentDate(a.appointmentDate)} at ${timeSlotLabel(a.timeSlot)}`
-                return (
-                  <TableRow key={a._id}>
-                    <TableCell className="pl-4">
-                      <div className="flex min-w-48 items-center gap-3">
-                        <ServiceThumb src={a.service?.image} />
-                        <div className="min-w-0">
-                          <p className="truncate font-medium">{name}</p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {a.service?.category ?? "—"}
-                          </p>
-                        </div>
+        <DataTable>
+          <DataTableHeader>
+            <DataHead className="pl-4">Service</DataHead>
+            <DataHead>Date &amp; time</DataHead>
+            <DataHead>Price</DataHead>
+            <DataHead>Status</DataHead>
+            <DataHead>Payment</DataHead>
+            <DataHead className="md:max-lg:hidden">Requested</DataHead>
+            <DataHead className="pr-4 text-right">Actions</DataHead>
+          </DataTableHeader>
+          <DataTableBody>
+            {visible.map((a) => {
+              const name =
+                a.service?.serviceName ?? "Service no longer available"
+              const when = `${formatAppointmentDate(a.appointmentDate)} at ${timeSlotLabel(a.timeSlot)}`
+              return (
+                <DataRow key={a._id}>
+                  <DataCell label="Service" kind="primary" className="pl-4">
+                    <div className="flex min-w-48 items-center gap-3">
+                      <ServiceThumb src={a.service?.image} />
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {a.service?.category ?? "—"}
+                        </p>
                       </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <p>{formatAppointmentDate(a.appointmentDate)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {timeSlotLabel(a.timeSlot)}
-                      </p>
-                    </TableCell>
-                    <TableCell className="font-semibold tabular-nums">
-                      {formatPrice(a.servicePrice)}
-                    </TableCell>
-                    <TableCell>
-                      <AppointmentStatusBadge status={a.status} />
-                    </TableCell>
-                    <TableCell>
-                      <PaymentStatusBadge status={a.paymentStatus} />
-                    </TableCell>
-                    <TableCell className="hidden whitespace-nowrap text-muted-foreground lg:table-cell">
-                      {formatDate(a.createdAt)}
-                    </TableCell>
-                    <TableCell className="pr-4">
-                      <AppointmentActions
-                        id={a._id}
-                        serviceName={name}
-                        whenLabel={when}
-                        status={a.status}
-                        paymentStatus={a.paymentStatus}
-                        details={
-                          <DetailsList
-                            rows={[
-                              { label: "Service", value: name },
-                              {
-                                label: "Category",
-                                value: a.service?.category ?? "—",
-                              },
-                              {
-                                label: "Date",
-                                value: formatAppointmentDate(a.appointmentDate),
-                              },
-                              {
-                                label: "Time",
-                                value: timeSlotLabel(a.timeSlot),
-                              },
-                              {
-                                label: "Price",
-                                value: formatPrice(a.servicePrice),
-                              },
-                              {
-                                label: "Status",
-                                value: (
-                                  <AppointmentStatusBadge status={a.status} />
-                                ),
-                              },
-                              {
-                                label: "Payment",
-                                value: (
-                                  <PaymentStatusBadge
-                                    status={a.paymentStatus}
-                                  />
-                                ),
-                              },
-                              {
-                                label: "Requested on",
-                                value: formatDate(a.createdAt),
-                              },
-                              {
-                                label: "Your message",
-                                value: a.message || "—",
-                              },
-                            ]}
-                          />
-                        }
-                      />
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                    </div>
+                  </DataCell>
+                  <DataCell label="Date & time" className="whitespace-nowrap">
+                    <p>{formatAppointmentDate(a.appointmentDate)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {timeSlotLabel(a.timeSlot)}
+                    </p>
+                  </DataCell>
+                  <DataCell
+                    label="Price"
+                    className="font-semibold tabular-nums"
+                  >
+                    {formatPrice(a.servicePrice)}
+                  </DataCell>
+                  <DataCell label="Status">
+                    <AppointmentStatusBadge status={a.status} />
+                  </DataCell>
+                  <DataCell label="Payment">
+                    <PaymentStatusBadge status={a.paymentStatus} />
+                  </DataCell>
+                  <DataCell
+                    label="Requested"
+                    className="whitespace-nowrap text-muted-foreground md:max-lg:hidden"
+                  >
+                    {formatDate(a.createdAt)}
+                  </DataCell>
+                  <DataCell label="Actions" kind="actions" className="pr-4">
+                    <AppointmentActions
+                      id={a._id}
+                      serviceName={name}
+                      whenLabel={when}
+                      status={a.status}
+                      paymentStatus={a.paymentStatus}
+                      details={
+                        <DetailsList
+                          rows={[
+                            { label: "Service", value: name },
+                            {
+                              label: "Category",
+                              value: a.service?.category ?? "—",
+                            },
+                            {
+                              label: "Date",
+                              value: formatAppointmentDate(a.appointmentDate),
+                            },
+                            {
+                              label: "Time",
+                              value: timeSlotLabel(a.timeSlot),
+                            },
+                            {
+                              label: "Price",
+                              value: formatPrice(a.servicePrice),
+                            },
+                            {
+                              label: "Status",
+                              value: (
+                                <AppointmentStatusBadge status={a.status} />
+                              ),
+                            },
+                            {
+                              label: "Payment",
+                              value: (
+                                <PaymentStatusBadge status={a.paymentStatus} />
+                              ),
+                            },
+                            {
+                              label: "Requested on",
+                              value: formatDate(a.createdAt),
+                            },
+                            {
+                              label: "Your message",
+                              value: a.message || "—",
+                            },
+                          ]}
+                        />
+                      }
+                    />
+                  </DataCell>
+                </DataRow>
+              )
+            })}
+          </DataTableBody>
+        </DataTable>
       )}
     </section>
   )

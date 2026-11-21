@@ -24,26 +24,33 @@ export default function MyAppointmentsLoading() {
         action="w-36"
       />
 
-      <StatusTabsSkeleton labels={["All", "Pending", "Confirmed", "Cancelled"]} />
+      <StatusTabsSkeleton
+        labels={["All", "Pending", "Confirmed", "Cancelled"]}
+      />
       <TableCardSkeleton
         rows={6}
         columns={[
           {
             header: "Service",
+            kind: "primary",
             className: "pl-4",
             cell: <IdentityCellSkeleton media="thumb" minWidth="min-w-48" />,
           },
-          { header: "Date & time", cell: <TwoLineSkeleton top="w-28" bottom="w-14" /> },
+          {
+            header: "Date & time",
+            cell: <TwoLineSkeleton top="w-28" bottom="w-14" />,
+          },
           { header: "Price", cell: <TextSkeleton width="w-10" /> },
           { header: "Status", cell: <BadgeSkeleton /> },
           { header: "Payment", cell: <BadgeSkeleton width="w-14" /> },
           {
             header: "Requested",
-            className: "hidden lg:table-cell",
+            className: "md:max-lg:hidden",
             cell: <TextSkeleton width="w-24" />,
           },
           {
             header: "Actions",
+            kind: "actions",
             className: "pr-4",
             headClassName: "pr-4 text-right",
             cell: <RowActionsSkeleton items={["icon", "w-20"]} />,
@@ -56,16 +63,21 @@ export default function MyAppointmentsLoading() {
         <TableCardSkeleton
           rows={3}
           columns={[
-            { header: "Service", className: "pl-4", cell: <TextSkeleton width="w-32" /> },
+            {
+              header: "Service",
+              kind: "primary",
+              className: "pl-4",
+              cell: <TextSkeleton width="w-32" />,
+            },
             { header: "Appointment", cell: <TextSkeleton width="w-28" /> },
             { header: "Amount", cell: <TextSkeleton width="w-14" /> },
             { header: "Status", cell: <BadgeSkeleton width="w-12" /> },
+            { header: "Reference", cell: <Skeleton className="h-3 w-28" /> },
             {
-              header: "Reference",
-              className: "hidden md:table-cell",
-              cell: <Skeleton className="h-3 w-28" />,
+              header: "Paid on",
+              className: "pr-4",
+              cell: <TextSkeleton width="w-24" />,
             },
-            { header: "Paid on", className: "pr-4", cell: <TextSkeleton width="w-24" /> },
           ]}
         />
       </section>

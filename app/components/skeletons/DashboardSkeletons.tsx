@@ -1,13 +1,14 @@
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  DataCell,
+  DataHead,
+  DataRow,
+  DataTable,
+  DataTableBody,
+  DataTableHeader,
+  type DataCellKind,
+} from "@/app/components/dashboard/DataTable"
 
 /*
  * Building blocks for dashboard `loading.tsx` files. Each one mirrors the
@@ -118,7 +119,9 @@ export function IdentityCellSkeleton({
       <Skeleton
         className={cn(
           "shrink-0",
-          media === "avatar" ? cn("rounded-full", mediaSize) : "size-11 rounded-lg"
+          media === "avatar"
+            ? cn("rounded-full", mediaSize)
+            : "size-11 rounded-lg"
         )}
       />
       <div className="min-w-0 flex-1 space-y-1.5">
@@ -179,16 +182,21 @@ export function RowActionsSkeleton({
 }
 
 export interface SkeletonColumn {
-  /** Real column header text */
+  /** Real column header text (also the field label on mobile cards) */
   header: string
-  /** Same responsive/padding classes as the real column, e.g. "hidden md:table-cell" */
+  /** Same `DataCell` kind as the real column (default "field") */
+  kind?: DataCellKind
+  /** Same responsive/padding classes as the real column, e.g. "md:max-lg:hidden" */
   className?: string
   /** Header alignment/padding if different from the cell */
   headClassName?: string
   cell: React.ReactNode
 }
 
-/** Same card + `Table` markup as the dashboard lists, with placeholder rows. */
+/**
+ * Same `DataTable` markup as the dashboard lists (table on desktop, cards on
+ * mobile), with placeholder rows.
+ */
 export function TableCardSkeleton({
   columns,
   rows,
@@ -197,33 +205,34 @@ export function TableCardSkeleton({
   rows: number
 }) {
   return (
-    <div className="rounded-2xl border bg-card shadow-sm">
-      <Table>
-        <TableHeader>
-          <TableRow>
+    <DataTable>
+      <DataTableHeader>
+        {columns.map((col) => (
+          <DataHead
+            key={col.header}
+            className={col.headClassName ?? col.className}
+          >
+            {col.header}
+          </DataHead>
+        ))}
+      </DataTableHeader>
+      <DataTableBody>
+        {Array.from({ length: rows }, (_, r) => (
+          <DataRow key={r} className="hover:bg-transparent">
             {columns.map((col) => (
-              <TableHead
+              <DataCell
                 key={col.header}
-                className={col.headClassName ?? col.className}
+                label={col.header}
+                kind={col.kind}
+                className={col.className}
               >
-                {col.header}
-              </TableHead>
+                {col.cell}
+              </DataCell>
             ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {Array.from({ length: rows }, (_, r) => (
-            <TableRow key={r} className="hover:bg-transparent">
-              {columns.map((col) => (
-                <TableCell key={col.header} className={col.className}>
-                  {col.cell}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+          </DataRow>
+        ))}
+      </DataTableBody>
+    </DataTable>
   )
 }
 

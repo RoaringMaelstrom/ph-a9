@@ -32,27 +32,28 @@ export default function ManageServicesLoading() {
         columns={[
           {
             header: "Service",
+            kind: "primary",
             className: "pl-4",
             cell: <IdentityCellSkeleton media="thumb" minWidth="min-w-52" />,
           },
           { header: "Price", cell: <TextSkeleton width="w-10" /> },
-          {
-            header: "Duration",
-            className: "hidden md:table-cell",
-            cell: <TextSkeleton width="w-14" />,
-          },
+          { header: "Duration", cell: <TextSkeleton width="w-14" /> },
           { header: "Status", cell: <BadgeSkeleton width="w-14" /> },
           {
             header: "Created",
-            className: "hidden lg:table-cell",
+            className: "md:max-lg:hidden",
             cell: <TextSkeleton width="w-24" />,
           },
           {
             header: "Actions",
+            kind: "actions",
             className: "pr-4",
             headClassName: "pr-4 text-right",
             cell: (
-              <RowActionsSkeleton items={["w-24", "icon", "icon"]} gap="gap-1" />
+              <RowActionsSkeleton
+                items={["w-24", "icon", "icon"]}
+                gap="gap-1"
+              />
             ),
           },
         ]}

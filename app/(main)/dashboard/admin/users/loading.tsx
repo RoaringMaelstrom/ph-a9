@@ -24,22 +24,20 @@ export default function ManageUsersLoading() {
         columns={[
           {
             header: "Customer",
+            kind: "primary",
             className: "pl-4",
             cell: <IdentityCellSkeleton minWidth="min-w-48" />,
           },
-          {
-            header: "Phone",
-            className: "hidden md:table-cell",
-            cell: <TextSkeleton width="w-28" />,
-          },
+          { header: "Phone", cell: <TextSkeleton width="w-28" /> },
           { header: "Status", cell: <BadgeSkeleton width="w-16" /> },
           {
             header: "Joined",
-            className: "hidden lg:table-cell",
+            className: "md:max-lg:hidden",
             cell: <TextSkeleton width="w-24" />,
           },
           {
             header: "Actions",
+            kind: "actions",
             className: "pr-4",
             headClassName: "pr-4 text-right",
             cell: <RowActionsSkeleton items={["icon", "w-18"]} />,

@@ -108,6 +108,8 @@ Card data (home + browse): image, name, category, price, duration, short descrip
 
 Users must not reach another role's dashboard by editing the URL. Dashboard = separate layout with sidebar + main content, responsive, stat cards, tables.
 
+**Dashboard lists** use `app/components/dashboard/DataTable.tsx` (`DataTable`, `DataTableHeader`, `DataHead`, `DataTableBody`, `DataRow`, `DataCell`): a table from `md` up, a stack of cards below `md`. Every `DataCell` needs a `label` (shown as "label … value" on mobile) and a `kind` (`primary` = card heading, `actions` = card footer, default `field`). Cards show every field, so hide table columns only from `md` up (`md:max-lg:hidden`, `md:max-xl:hidden`), never with `hidden lg:table-cell`. Put value-only styles like `truncate` on an inner element, not the cell. `TableCardSkeleton` uses the same components (columns take `kind`).
+
 **Pagination & filters (client-side, URL-driven).** Lists are fetched whole and paginated in Next with `paginate`/`parsePageParam`/`parsePerPageParam` from `lib/pagination.ts`. Page and filters live in the URL (`?page=`, `?perPage=`, `?status=`, …) so reloads and back/forward work; changing any filter/tab/page size resets to page 1 and keeps the other params. Changing page scrolls the list's `<section id=…>` (which has `scroll-mt-24` for the sticky navbar) into view via `scrollToSection`. Components: `app/components/shared/PaginationBar.tsx` (presentational Previous/1…n/Next, used by Browse Services and the dashboard) and `app/components/dashboard/DashboardPagination.tsx` ("Showing a–b of n" + bar + optional "Show [n] per page"; it reads/updates the current URL with `useSearchParams`). Page sizes:
 
 | Panel | Per page | Section id |

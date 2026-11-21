@@ -18,15 +18,15 @@ import type {
   ServiceStatus,
 } from "@/app/components/types/service"
 import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import DashboardPagination from "@/app/components/dashboard/DashboardPagination"
+import {
+  DataCell,
+  DataHead,
+  DataRow,
+  DataTable,
+  DataTableBody,
+  DataTableHeader,
+} from "@/app/components/dashboard/DataTable"
 import DataError from "@/app/components/dashboard/DataError"
 import PageHeader from "@/app/components/dashboard/PageHeader"
 import ServiceThumb from "@/app/components/dashboard/ServiceThumb"
@@ -192,62 +192,58 @@ function ServicesTable({
             }
           />
         ) : (
-          <div className="rounded-2xl border bg-card shadow-sm">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="pl-4">Service</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Duration
-                  </TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="hidden lg:table-cell">
-                    Created
-                  </TableHead>
-                  <TableHead className="pr-4 text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pageData.items.map((s) => (
-                  <TableRow key={s._id}>
-                    <TableCell className="pl-4">
-                      <div className="flex min-w-52 items-center gap-3">
-                        <ServiceThumb src={s.image} />
-                        <div className="min-w-0">
-                          <p className="truncate font-medium">
-                            {s.serviceName}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {s.category}
-                          </p>
-                        </div>
+          <DataTable>
+            <DataTableHeader>
+              <DataHead className="pl-4">Service</DataHead>
+              <DataHead>Price</DataHead>
+              <DataHead>Duration</DataHead>
+              <DataHead>Status</DataHead>
+              <DataHead className="md:max-lg:hidden">Created</DataHead>
+              <DataHead className="pr-4 text-right">Actions</DataHead>
+            </DataTableHeader>
+            <DataTableBody>
+              {pageData.items.map((s) => (
+                <DataRow key={s._id}>
+                  <DataCell label="Service" kind="primary" className="pl-4">
+                    <div className="flex min-w-52 items-center gap-3">
+                      <ServiceThumb src={s.image} />
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{s.serviceName}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {s.category}
+                        </p>
                       </div>
-                    </TableCell>
-                    <TableCell className="font-semibold tabular-nums">
-                      {formatPrice(s.price)}
-                    </TableCell>
-                    <TableCell className="hidden whitespace-nowrap md:table-cell">
-                      {formatDuration(s.duration)}
-                    </TableCell>
-                    <TableCell>
-                      <ServiceStatusBadge status={s.status} />
-                    </TableCell>
-                    <TableCell className="hidden whitespace-nowrap text-muted-foreground lg:table-cell">
-                      {formatDate(s.createdAt)}
-                    </TableCell>
-                    <TableCell className="pr-4">
-                      <ServiceRowActions
-                        id={s._id}
-                        name={s.serviceName}
-                        status={s.status}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                    </div>
+                  </DataCell>
+                  <DataCell
+                    label="Price"
+                    className="font-semibold tabular-nums"
+                  >
+                    {formatPrice(s.price)}
+                  </DataCell>
+                  <DataCell label="Duration" className="whitespace-nowrap">
+                    {formatDuration(s.duration)}
+                  </DataCell>
+                  <DataCell label="Status">
+                    <ServiceStatusBadge status={s.status} />
+                  </DataCell>
+                  <DataCell
+                    label="Created"
+                    className="whitespace-nowrap text-muted-foreground md:max-lg:hidden"
+                  >
+                    {formatDate(s.createdAt)}
+                  </DataCell>
+                  <DataCell label="Actions" kind="actions" className="pr-4">
+                    <ServiceRowActions
+                      id={s._id}
+                      name={s.serviceName}
+                      status={s.status}
+                    />
+                  </DataCell>
+                </DataRow>
+              ))}
+            </DataTableBody>
+          </DataTable>
         )}
         <DashboardPagination
           {...pageData}

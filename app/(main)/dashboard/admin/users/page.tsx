@@ -5,15 +5,15 @@ import { serverApi } from "@/lib/server-api"
 import { formatDate } from "@/lib/format"
 import { paginate, parsePageParam } from "@/lib/pagination"
 import type { UserAccount } from "@/app/components/types/user"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import DashboardPagination from "@/app/components/dashboard/DashboardPagination"
+import {
+  DataCell,
+  DataHead,
+  DataRow,
+  DataTable,
+  DataTableBody,
+  DataTableHeader,
+} from "@/app/components/dashboard/DataTable"
 import DataError from "@/app/components/dashboard/DataError"
 import DetailsList from "@/app/components/dashboard/DetailsList"
 import PageHeader from "@/app/components/dashboard/PageHeader"
@@ -96,98 +96,97 @@ function UsersTable({
           description="Customers appear here after they create an account."
         />
       ) : (
-        <div className="rounded-2xl border bg-card shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-4">Customer</TableHead>
-                <TableHead className="hidden md:table-cell">Phone</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden lg:table-cell">Joined</TableHead>
-                <TableHead className="pr-4 text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {pageData.items.map((u) => (
-                <TableRow key={u._id}>
-                  <TableCell className="pl-4">
-                    <div className="flex min-w-48 items-center gap-3">
-                      <UserAvatar
-                        name={u.name}
-                        image={u.image}
-                        className="size-9"
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate font-medium">{u.name}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {u.email}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden whitespace-nowrap md:table-cell">
-                    {u.phone || "—"}
-                  </TableCell>
-                  <TableCell>
-                    <AccountStatusBadge isBlocked={u.isBlocked} />
-                  </TableCell>
-                  <TableCell className="hidden whitespace-nowrap text-muted-foreground lg:table-cell">
-                    {formatDate(u.createdAt)}
-                  </TableCell>
-                  <TableCell className="pr-4">
-                    <UserActions
-                      id={u._id}
+        <DataTable>
+          <DataTableHeader>
+            <DataHead className="pl-4">Customer</DataHead>
+            <DataHead>Phone</DataHead>
+            <DataHead>Status</DataHead>
+            <DataHead className="md:max-lg:hidden">Joined</DataHead>
+            <DataHead className="pr-4 text-right">Actions</DataHead>
+          </DataTableHeader>
+          <DataTableBody>
+            {pageData.items.map((u) => (
+              <DataRow key={u._id}>
+                <DataCell label="Customer" kind="primary" className="pl-4">
+                  <div className="flex min-w-48 items-center gap-3">
+                    <UserAvatar
                       name={u.name}
-                      isBlocked={u.isBlocked}
-                      canBlock={u.role !== "admin" && u._id !== currentAdminId}
-                      details={
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                            <UserAvatar
-                              name={u.name}
-                              image={u.image}
-                              className="size-14"
-                            />
-                            <div className="min-w-0">
-                              <p className="truncate font-semibold">{u.name}</p>
-                              <p className="truncate text-sm text-muted-foreground">
-                                {u.email}
-                              </p>
-                            </div>
-                          </div>
-                          <DetailsList
-                            rows={[
-                              { label: "Phone", value: u.phone || "—" },
-                              { label: "Account type", value: "Customer" },
-                              {
-                                label: "Status",
-                                value: (
-                                  <AccountStatusBadge isBlocked={u.isBlocked} />
-                                ),
-                              },
-                              {
-                                label: "Joined",
-                                value: formatDate(u.createdAt),
-                              },
-                              ...(u.appointmentCount !== undefined
-                                ? [
-                                    {
-                                      label: "Appointments",
-                                      value: u.appointmentCount,
-                                    },
-                                  ]
-                                : []),
-                            ]}
-                          />
-                        </div>
-                      }
+                      image={u.image}
+                      className="size-9"
                     />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{u.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {u.email}
+                      </p>
+                    </div>
+                  </div>
+                </DataCell>
+                <DataCell label="Phone" className="whitespace-nowrap">
+                  {u.phone || "—"}
+                </DataCell>
+                <DataCell label="Status">
+                  <AccountStatusBadge isBlocked={u.isBlocked} />
+                </DataCell>
+                <DataCell
+                  label="Joined"
+                  className="whitespace-nowrap text-muted-foreground md:max-lg:hidden"
+                >
+                  {formatDate(u.createdAt)}
+                </DataCell>
+                <DataCell label="Actions" kind="actions" className="pr-4">
+                  <UserActions
+                    id={u._id}
+                    name={u.name}
+                    isBlocked={u.isBlocked}
+                    canBlock={u.role !== "admin" && u._id !== currentAdminId}
+                    details={
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <UserAvatar
+                            name={u.name}
+                            image={u.image}
+                            className="size-14"
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold">{u.name}</p>
+                            <p className="truncate text-sm text-muted-foreground">
+                              {u.email}
+                            </p>
+                          </div>
+                        </div>
+                        <DetailsList
+                          rows={[
+                            { label: "Phone", value: u.phone || "—" },
+                            { label: "Account type", value: "Customer" },
+                            {
+                              label: "Status",
+                              value: (
+                                <AccountStatusBadge isBlocked={u.isBlocked} />
+                              ),
+                            },
+                            {
+                              label: "Joined",
+                              value: formatDate(u.createdAt),
+                            },
+                            ...(u.appointmentCount !== undefined
+                              ? [
+                                  {
+                                    label: "Appointments",
+                                    value: u.appointmentCount,
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
+                      </div>
+                    }
+                  />
+                </DataCell>
+              </DataRow>
+            ))}
+          </DataTableBody>
+        </DataTable>
       )}
       <DashboardPagination
         {...pageData}
