@@ -27,7 +27,9 @@ export default function ServiceCard({
         {service.image ? (
           <Image
             src={service.image}
-            alt=""
+            // Descriptive for image search; the link is aria-hidden, so screen
+            // readers don't hear the name twice.
+            alt={`${service.serviceName} (${service.category})`}
             fill
             preload={preloadImage}
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"

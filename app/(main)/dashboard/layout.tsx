@@ -1,10 +1,12 @@
 import type { Metadata } from "next"
+import { NO_INDEX } from "@/lib/seo"
 
 import { requireActiveUser } from "@/lib/session"
 import DashboardSidebar from "@/app/components/dashboard/DashboardSidebar"
 
 export const metadata: Metadata = {
-  title: "Dashboard | SalonBook",
+  title: "Dashboard",
+  robots: NO_INDEX,
 }
 
 /**

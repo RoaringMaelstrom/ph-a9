@@ -25,14 +25,19 @@ import {
   TIME_SLOTS,
   categoryHref,
 } from "@/lib/site"
+import { breadcrumbJsonLd, pageMetadata, salonJsonLd } from "@/lib/seo"
 import { Button } from "@/components/ui/button"
+import JsonLd from "@/app/components/shared/JsonLd"
 
 const DESCRIPTION =
   "Learn how SalonBook works: browse hair, skin, nail and spa services, request an appointment online, get it confirmed by the salon, and pay securely with Stripe."
 
 export const metadata: Metadata = {
-  title: "About Us | How SalonBook Works",
-  description: DESCRIPTION,
+  ...pageMetadata({
+    title: "About Us: How Online Salon Booking Works",
+    description: DESCRIPTION,
+    path: "/about-us",
+  }),
   keywords: [
     "salon booking",
     "online salon appointment",
@@ -42,19 +47,6 @@ export const metadata: Metadata = {
     "nail salon appointment",
     "SalonBook",
   ],
-  alternates: { canonical: "/about-us" },
-  openGraph: {
-    type: "website",
-    url: "/about-us",
-    siteName: SALON_INFO.name,
-    title: "About SalonBook | How online salon booking works",
-    description: DESCRIPTION,
-  },
-  twitter: {
-    card: "summary",
-    title: "About SalonBook | How online salon booking works",
-    description: DESCRIPTION,
-  },
 }
 
 const FIRST_SLOT = TIME_SLOTS[0].label
@@ -133,42 +125,10 @@ const FAQS = [
   },
 ] as const
 
-/** Structured data: the salon (local business) and the FAQ, for search engines. */
+/** Structured data: the salon (local business), the FAQ and the breadcrumb. */
 function jsonLd() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "")
   return [
-    {
-      "@context": "https://schema.org",
-      "@type": "BeautySalon",
-      name: SALON_INFO.name,
-      description: SALON_INFO.tagline,
-      ...(baseUrl && { url: baseUrl }),
-      telephone: SALON_INFO.phone,
-      email: SALON_INFO.email,
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: SALON_INFO.address[0],
-        addressLocality: SALON_INFO.address[1],
-      },
-      openingHoursSpecification: [
-        { days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], opens: "09:00", closes: "20:00" },
-        { days: ["Saturday"], opens: "09:00", closes: "18:00" },
-        { days: ["Sunday"], opens: "10:00", closes: "16:00" },
-      ].map(({ days, opens, closes }) => ({
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: days,
-        opens,
-        closes,
-      })),
-      hasOfferCatalog: {
-        "@type": "OfferCatalog",
-        name: "Salon services",
-        itemListElement: SERVICE_CATEGORIES.map((category) => ({
-          "@type": "OfferCatalog",
-          name: category,
-        })),
-      },
-    },
+    salonJsonLd(),
     {
       "@context": "https://schema.org",
       "@type": "FAQPage",
@@ -178,6 +138,10 @@ function jsonLd() {
         acceptedAnswer: { "@type": "Answer", text: a },
       })),
     },
+    breadcrumbJsonLd([
+      ["Home", "/"],
+      ["About Us", "/about-us"],
+    ]),
   ]
 }
 
@@ -215,12 +179,7 @@ function SectionHeading({
 export default function AboutUsPage() {
   return (
     <main className="flex-1">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd()).replace(/</g, "\\u003c"),
-        }}
-      />
+      <JsonLd data={jsonLd()} />
 
       {/* Intro */}
       <section className="border-b bg-muted/40">

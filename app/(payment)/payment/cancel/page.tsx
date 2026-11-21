@@ -17,7 +17,7 @@ import PaymentCard from "../PaymentCard"
 import ToastOnMount from "../ToastOnMount"
 
 export const metadata: Metadata = {
-  title: "Payment cancelled | SalonBook",
+  title: "Payment cancelled",
 }
 
 /**

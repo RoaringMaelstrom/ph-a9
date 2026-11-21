@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
+import { NO_INDEX } from "@/lib/seo"
 
 export const metadata: Metadata = {
-  robots: { index: false },
+  robots: NO_INDEX,
 }
 
 /** Centered card layout for the pages Stripe Checkout returns to. */

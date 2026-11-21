@@ -2,15 +2,18 @@ import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { getCurrentSession } from "@/lib/session"
+import { pageMetadata } from "@/lib/seo"
 import { dashboardPathFor, safeRedirect } from "@/lib/routes"
 import AuthShell from "@/app/components/shared/AuthShell"
 
 import SignInForm from "./SignInForm"
 
-export const metadata: Metadata = {
-  title: "Sign In | SalonBook",
-  description: "Sign in to SalonBook to book and manage your salon appointments.",
-}
+export const metadata: Metadata = pageMetadata({
+  title: "Sign In",
+  description:
+    "Sign in to SalonBook to book salon appointments, follow their status and pay securely online.",
+  path: "/sign-in",
+})
 
 export default async function SignInPage({
   searchParams,

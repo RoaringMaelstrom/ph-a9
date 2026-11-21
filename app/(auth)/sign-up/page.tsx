@@ -2,15 +2,18 @@ import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { getCurrentSession } from "@/lib/session"
+import { pageMetadata } from "@/lib/seo"
 import { dashboardPathFor, safeRedirect } from "@/lib/routes"
 import AuthShell from "@/app/components/shared/AuthShell"
 
 import SignUpForm from "./SignUpForm"
 
-export const metadata: Metadata = {
-  title: "Sign Up | SalonBook",
-  description: "Create a SalonBook account to book salon appointments online.",
-}
+export const metadata: Metadata = pageMetadata({
+  title: "Create an Account",
+  description:
+    "Create a free SalonBook account to book haircuts, facials, nails and spa treatments online and manage your appointments.",
+  path: "/sign-up",
+})
 
 export default async function SignUpPage({
   searchParams,

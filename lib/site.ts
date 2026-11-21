@@ -7,7 +7,7 @@ export const SALON_INFO = {
   tagline:
     "Book hair, skin, nail and spa appointments online. Browse our services, pick a time that suits you, and pay securely once your visit is confirmed.",
   phone: "+1 (555) 014-2290",
-  email: "hello@salonbook.com",
+  email: "muhtadihashimabdullah@gmail.com",
   address: ["123 Blossom Avenue, Suite 4", "Springfield, ST 10001"],
   hours: [
     { days: "Mon – Fri", time: "9:00 AM – 8:00 PM" },

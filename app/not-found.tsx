@@ -6,7 +6,7 @@ import { SERVICE_CATEGORIES, categoryHref } from "@/lib/site"
 import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
-  title: "Page Not Found | SalonBook",
+  title: "Page Not Found",
   description: "The page you are looking for doesn't exist or has been moved.",
 }
 

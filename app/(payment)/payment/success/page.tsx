@@ -12,7 +12,7 @@ import PaymentCard from "../PaymentCard"
 import PaymentStatusView from "./PaymentStatusView"
 
 export const metadata: Metadata = {
-  title: "Payment | SalonBook",
+  title: "Payment",
 }
 
 const SESSION_ID_PATTERN = /^cs_(test|live)_[A-Za-z0-9]{10,250}$/

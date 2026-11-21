@@ -251,7 +251,7 @@ export default function SignUpForm({ redirectTo }: { redirectTo: string | null }
     <Card className="border-none bg-transparent shadow-none ring-0 sm:border-solid sm:bg-card sm:shadow-sm sm:ring-1">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-semibold tracking-tight">
-          Create your account
+          <h1>Create your account</h1>
         </CardTitle>
         <CardDescription>Book salon services and track your appointments</CardDescription>
       </CardHeader>

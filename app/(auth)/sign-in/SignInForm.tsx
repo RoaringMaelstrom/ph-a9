@@ -131,7 +131,7 @@ export default function SignInForm({
     <Card className="border-none bg-transparent shadow-none ring-0 sm:border-solid sm:bg-card sm:shadow-sm sm:ring-1">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-semibold tracking-tight">
-          Welcome back
+          <h1>Welcome back</h1>
         </CardTitle>
         <CardDescription>
           Sign in to book and manage your salon appointments

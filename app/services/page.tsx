@@ -4,6 +4,8 @@ import Link from "next/link"
 import { CloudOffIcon, SearchXIcon, SparklesIcon } from "lucide-react"
 
 import { getBrowseServices } from "@/lib/api"
+import { pageMetadata } from "@/lib/seo"
+import { categoryHref } from "@/lib/site"
 import {
   filtersToSearchParams,
   hasActiveFilters,
@@ -22,16 +24,42 @@ import ServicesPagination from "./ServicesPagination"
 import ServicesToolbar from "./ServicesToolbar"
 import { RESULTS_SECTION_ID } from "./useServicesNavigation"
 
-export const metadata: Metadata = {
-  title: "Browse Services | SalonBook",
-  description:
-    "Explore SalonBook's salon services: haircuts, coloring, treatments, facials, makeup, nails and spa. Search, filter and sort to find your perfect appointment.",
+type SearchParams = Promise<Record<string, string | string[] | undefined>>
+
+/**
+ * One canonical URL per category (`/services` or `/services?category=…`):
+ * page, sort and page-size variants all point to it, so search engines don't
+ * see them as duplicates. Search results are thin, so they aren't indexed.
+ */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams
+}): Promise<Metadata> {
+  const { category, search } = parseServiceFilters(await searchParams)
+
+  if (category) {
+    return pageMetadata({
+      title: `${category} Services`,
+      description: `Browse ${category.toLowerCase()} services at SalonBook. Compare prices and durations, then request an appointment online and pay securely once it's confirmed.`,
+      path: categoryHref(category),
+      index: !search,
+    })
+  }
+
+  return pageMetadata({
+    title: "Browse Salon Services",
+    description:
+      "Explore SalonBook's salon services: haircuts, coloring, treatments, facials, makeup, nails and spa. Search, filter and sort to find your perfect appointment.",
+    path: "/services",
+    index: !search,
+  })
 }
 
 export default async function BrowseServicesPage({
   searchParams,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
+  searchParams: SearchParams
 }) {
   const filters = parseServiceFilters(await searchParams)
 

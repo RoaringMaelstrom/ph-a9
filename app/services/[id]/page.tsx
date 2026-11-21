@@ -16,7 +16,15 @@ import {
 import { BLOCKED_PATH, getCurrentSession } from "@/lib/session"
 import { getServiceById } from "@/lib/api"
 import { formatDuration, formatPrice } from "@/lib/format"
-import { categoryHref } from "@/lib/site"
+import { CURRENCY, categoryHref } from "@/lib/site"
+import {
+  NO_INDEX,
+  absoluteUrl,
+  breadcrumbJsonLd,
+  pageMetadata,
+} from "@/lib/seo"
+import type { Service } from "@/app/components/types/service"
+import JsonLd from "@/app/components/shared/JsonLd"
 import { dashboardPathFor } from "@/lib/routes"
 import { Button } from "@/components/ui/button"
 import {
@@ -36,11 +44,60 @@ type Props = { params: Promise<{ id: string }> }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const result = await getServiceById(id)
-  if (result.status !== "ok") return { title: "Service | SalonBook" }
-  return {
-    title: `${result.data.serviceName} | SalonBook`,
-    description: result.data.description.slice(0, 155),
-  }
+  if (result.status !== "ok") return { title: "Service", robots: NO_INDEX }
+
+  const service = result.data
+  return pageMetadata({
+    title: `${service.serviceName} (${service.category})`,
+    description: metaDescription(
+      `${service.serviceName}: ${formatPrice(service.price)}, ${formatDuration(service.duration)}. ${service.description}`
+    ),
+    path: `/services/${service._id}`,
+    image: service.image
+      ? { url: service.image, alt: service.serviceName }
+      : undefined,
+    // Inactive services can't be booked, so keep them out of search results.
+    index: service.status === "active",
+  })
+}
+
+/** Trims text to ~155 characters at a word boundary for meta descriptions. */
+function metaDescription(text: string, max = 155) {
+  const clean = text.replace(/\s+/g, " ").trim()
+  if (clean.length <= max) return clean
+  const cut = clean.slice(0, max - 1)
+  return `${cut.slice(0, cut.lastIndexOf(" ")).replace(/[\s,.;:]+$/, "")}…`
+}
+
+function serviceJsonLd(service: Service) {
+  const url = absoluteUrl(`/services/${service._id}`)
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      name: service.serviceName,
+      serviceType: service.category,
+      description: service.description,
+      url,
+      ...(service.image && { image: service.image }),
+      provider: { "@id": `${absoluteUrl("/")}#salon` },
+      offers: {
+        "@type": "Offer",
+        price: service.price.toFixed(2),
+        priceCurrency: CURRENCY,
+        url,
+        availability:
+          service.status === "active"
+            ? "https://schema.org/InStock"
+            : "https://schema.org/Discontinued",
+      },
+    },
+    breadcrumbJsonLd([
+      ["Home", "/"],
+      ["Services", "/services"],
+      [service.serviceName, `/services/${service._id}`],
+    ]),
+  ]
 }
 
 export default async function ServiceDetailsPage({ params }: Props) {
@@ -84,6 +141,7 @@ export default async function ServiceDetailsPage({ params }: Props) {
 
   return (
     <PageShell>
+      <JsonLd data={serviceJsonLd(service)} />
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

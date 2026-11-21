@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { NO_INDEX } from "@/lib/seo"
 import { redirect } from "next/navigation"
 
 import { requireUser } from "@/lib/session"
@@ -6,8 +7,8 @@ import { dashboardPathFor } from "@/lib/routes"
 import BlockedNotice from "@/app/components/dashboard/BlockedNotice"
 
 export const metadata: Metadata = {
-  title: "Account blocked | SalonBook",
-  robots: { index: false },
+  title: "Account blocked",
+  robots: NO_INDEX,
 }
 
 /**
