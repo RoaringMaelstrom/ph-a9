@@ -41,12 +41,14 @@ type NavLink = { href: string; label: string }
 const PUBLIC_LINKS: NavLink[] = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Browse Services" },
+  { href: "/about-us", label: "About Us" },
 ]
 
 function authLinks(dashboardHref: string): NavLink[] {
   return [
     { href: "/", label: "Home" },
     { href: "/services", label: "Services" },
+    { href: "/about-us", label: "About Us" },
     { href: dashboardHref, label: "Dashboard" },
   ]
 }

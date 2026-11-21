@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator"
 const QUICK_LINKS = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Browse Services" },
+  { href: "/about-us", label: "About Us" },
   { href: "/sign-in", label: "Sign In" },
   { href: "/sign-up", label: "Create Account" },
 ]

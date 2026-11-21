@@ -101,6 +101,7 @@ Footer: logo + short description, nav links, contact info, address + opening hou
 | `/dashboard/...` customer | customer only | Overview (total/pending/confirmed/cancelled), My Appointments (table with status + payment badges, details, cancel, Pay Now), My Profile |
 | `/dashboard/...` admin | admin only | Overview (customers, active services, total/pending/confirmed appointments, successful payments), Manage Services, Add/Update Service, Manage Appointments, Manage Users (view, block/unblock), Transactions, My Profile |
 | `/payment/success`, `/payment/cancel` | private | Post-Stripe pages |
+| `/about-us` | public | How the site works (SEO): static, metadata + canonical + Open Graph, `BeautySalon` and `FAQPage` JSON-LD, FAQ in native `<details>`. Linked from navbar and footer. `metadataBase` comes from `NEXT_PUBLIC_APP_URL` (root layout) |
 | `not-found`, `error` | — | Custom pages |
 
 Card data (home + browse): image, name, category, price, duration, short description, View Details button.

@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Geist, Geist_Mono, Inter } from "next/font/google"
 
 import "./globals.css"
@@ -15,6 +16,19 @@ const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
+
+/** Site URL for absolute metadata links (canonical, Open Graph). */
+function siteUrl() {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000")
+  } catch {
+    return new URL("http://localhost:3000")
+  }
+}
+
+export const metadata: Metadata = {
+  metadataBase: siteUrl(),
+}
 
 export default function RootLayout({
   children,
