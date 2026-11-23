@@ -4,6 +4,7 @@ import { passwordError } from "./password"
 import { MongoClient } from "mongodb"
 import { mongodbAdapter } from "@better-auth/mongo-adapter"
 import { jwt } from "better-auth/plugins"
+import { attachDatabasePool } from "@vercel/functions"
 
 /** Auth endpoints that set a password, and the body field holding it. */
 const PASSWORD_FIELDS: Record<string, string> = {
@@ -12,7 +13,23 @@ const PASSWORD_FIELDS: Record<string, string> = {
   "/set-password": "newPassword",
 }
 
-const client = new MongoClient(process.env.BETTER_AUTH_DB_URL as string)
+/**
+ * One MongoClient per server instance, reused across requests (and across
+ * hot reloads in dev, hence `globalThis`). On Vercel (Fluid compute),
+ * `attachDatabasePool` releases idle connections before the instance is
+ * suspended, so a resumed instance doesn't run queries on dead sockets.
+ */
+const globalForMongo = globalThis as unknown as { authMongoClient?: MongoClient }
+
+const client =
+  globalForMongo.authMongoClient ??
+  new MongoClient(process.env.BETTER_AUTH_DB_URL as string, {
+    maxIdleTimeMS: 5_000,
+    serverSelectionTimeoutMS: 10_000,
+  })
+globalForMongo.authMongoClient = client
+attachDatabasePool(client)
+
 const db = client.db("SalonBook")
 
 export const auth = betterAuth({

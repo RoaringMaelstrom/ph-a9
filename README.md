@@ -6,7 +6,7 @@ This repository is the **client**: a Next.js (App Router) app that also hosts au
 
 | | Link |
 |---|---|
-| Live website | _TBD_ |
+| Live website | https://ph-a9.vercel.app/ |
 | Client repository | https://github.com/RoaringMaelstrom/ph-a9 |
 | Server repository | https://github.com/RoaringMaelstrom/ph_a9_server |
 
